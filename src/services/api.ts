@@ -1,0 +1,138 @@
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+
+class ApiService {
+  private getAuthHeaders() {
+    const token = localStorage.getItem('token');
+    return {
+      'Content-Type': 'application/json',
+      ...(token && { Authorization: `Bearer ${token}` })
+    };
+  }
+
+  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+    const url = `${API_BASE_URL}${endpoint}`;
+    const config: RequestInit = {
+      headers: this.getAuthHeaders(),
+      ...options
+    };
+
+    const response = await fetch(url, config);
+    
+    if (!response.ok) {
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+      }
+      throw new Error(`API Error: ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+
+  // Auth endpoints
+  async login(email: string, password: string) {
+    return this.request<{ token: string; user: any }>('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password })
+    });
+  }
+
+  async logout() {
+    return this.request('/auth/logout', { method: 'POST' });
+  }
+
+  async getCurrentUser() {
+    return this.request<{ user: any }>('/auth/me');
+  }
+
+  // Products endpoints
+  async getProducts(params?: { search?: string; category?: string; page?: number; limit?: number }) {
+    const query = new URLSearchParams();
+    if (params?.search) query.append('search', params.search);
+    if (params?.category) query.append('category', params.category);
+    if (params?.page) query.append('page', params.page.toString());
+    if (params?.limit) query.append('limit', params.limit.toString());
+    
+    return this.request<{ products: any[]; total: number; page: number; limit: number }>(`/products?${query}`);
+  }
+
+  async createProduct(product: { name: string; price: number; stock: number; category: string }) {
+    return this.request<{ product: any }>('/products', {
+      method: 'POST',
+      body: JSON.stringify(product)
+    });
+  }
+
+  async updateProduct(id: string, product: Partial<{ name: string; price: number; stock: number; category: string }>) {
+    return this.request<{ product: any }>(`/products/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(product)
+    });
+  }
+
+  async deleteProduct(id: string) {
+    return this.request(`/products/${id}`, { method: 'DELETE' });
+  }
+
+  async getLowStockProducts(threshold = 10) {
+    return this.request<{ products: any[] }>(`/products/low-stock?threshold=${threshold}`);
+  }
+
+  // Transactions endpoints
+  async createTransaction(data: { items: Array<{ product_id: string; quantity: number }>; total: number }) {
+    return this.request<{ transaction: any; updated_products: any[] }>('/transactions', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async getTransactions(params?: { date?: string; page?: number; limit?: number }) {
+    const query = new URLSearchParams();
+    if (params?.date) query.append('date', params.date);
+    if (params?.page) query.append('page', params.page.toString());
+    if (params?.limit) query.append('limit', params.limit.toString());
+    
+    return this.request<{ transactions: any[]; total: number; page: number; limit: number }>(`/transactions?${query}`);
+  }
+
+  async getTransaction(id: string) {
+    return this.request<{ transaction: any; items: any[] }>(`/transactions/${id}`);
+  }
+
+  // Dashboard/Reports endpoints
+  async getDashboardStats(date?: string) {
+    const query = date ? `?date=${date}` : '';
+    return this.request<{
+      total_products: number;
+      today_transactions: number;
+      today_revenue: number;
+      low_stock_count: number;
+    }>(`/dashboard/stats${query}`);
+  }
+
+  async getSalesReport(params: { start_date?: string; end_date?: string; group_by?: 'day' | 'month' }) {
+    const query = new URLSearchParams();
+    if (params.start_date) query.append('start_date', params.start_date);
+    if (params.end_date) query.append('end_date', params.end_date);
+    if (params.group_by) query.append('group_by', params.group_by);
+    
+    return this.request<{
+      summary: { total_revenue: number; total_transactions: number };
+      data: Array<{ date: string; revenue: number; transactions: number }>;
+    }>(`/reports/sales?${query}`);
+  }
+
+  async getProductsReport(params: { start_date?: string; end_date?: string }) {
+    const query = new URLSearchParams();
+    if (params.start_date) query.append('start_date', params.start_date);
+    if (params.end_date) query.append('end_date', params.end_date);
+    
+    return this.request<{
+      best_selling: any[];
+      revenue_by_category: any[];
+    }>(`/reports/products?${query}`);
+  }
+}
+
+export const apiService = new ApiService();
