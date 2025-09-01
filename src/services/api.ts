@@ -18,6 +18,40 @@ interface RefreshTokenResponse {
   };
 }
 
+interface Product {
+  id: string;
+  name: string;
+  stock: number;
+  price: number;
+  created_at: string;
+  updated_at: string;
+  brand: {
+    id: string;
+    name: string;
+  };
+  category: {
+    id: string;
+    name: string;
+  };
+  tenant: {
+    id: string;
+    name: string;
+    location: string;
+  };
+}
+
+interface ProductsResponse {
+  status: string;
+  message: string;
+  metadata: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+  data: Product[];
+}
+
 class ApiService {
   private getAuthHeaders() {
     const token = localStorage.getItem("accessToken");
@@ -41,12 +75,19 @@ class ApiService {
     const response = await fetch(url, config);
 
     if (!response.ok) {
-      if (response.status === 401 && endpoint !== '/auth/refresh' && endpoint !== '/auth/login') {
+      if (
+        response.status === 401 &&
+        endpoint !== "/auth/refresh" &&
+        endpoint !== "/auth/login"
+      ) {
         // Try to refresh token
         try {
           const refreshResponse = await this.refreshToken();
-          if (refreshResponse.status === 'success') {
-            localStorage.setItem('accessToken', refreshResponse.data.accessToken);
+          if (refreshResponse.status === "success") {
+            localStorage.setItem(
+              "accessToken",
+              refreshResponse.data.accessToken
+            );
             // Retry the original request with new token
             const retryConfig: RequestInit = {
               ...config,
@@ -58,9 +99,9 @@ class ApiService {
             }
           }
         } catch (refreshError) {
-          console.error('Token refresh failed:', refreshError);
+          console.error("Token refresh failed:", refreshError);
         }
-        
+
         // If refresh fails, redirect to login
         localStorage.removeItem("accessToken");
         localStorage.removeItem("user");
@@ -100,19 +141,14 @@ class ApiService {
     category?: string;
     page?: number;
     limit?: number;
-  }) {
+  }): Promise<ProductsResponse> {
     const query = new URLSearchParams();
     if (params?.search) query.append("search", params.search);
     if (params?.category) query.append("category", params.category);
     if (params?.page) query.append("page", params.page.toString());
     if (params?.limit) query.append("limit", params.limit.toString());
 
-    return this.request<{
-      products: any[];
-      total: number;
-      page: number;
-      limit: number;
-    }>(`/products?${query}`);
+    return this.request<ProductsResponse>(`/products?${query}`);
   }
 
   async createProduct(product: {

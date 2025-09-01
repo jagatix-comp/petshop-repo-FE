@@ -3,7 +3,21 @@ export interface Product {
   name: string;
   price: number;
   stock: number;
-  category: string;
+  created_at: string;
+  updated_at: string;
+  brand: {
+    id: string;
+    name: string;
+  };
+  category: {
+    id: string;
+    name: string;
+  };
+  tenant: {
+    id: string;
+    name: string;
+    location: string;
+  };
 }
 
 export interface CartItem {

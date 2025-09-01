@@ -1,20 +1,26 @@
-import React, { useState } from 'react';
-import { Plus, Edit, Trash2, Search } from 'lucide-react';
-import { Layout } from '../components/Layout/Layout';
-import { Button } from '../components/ui/Button';
-import { AddProductModal } from '../components/Products/AddProductModal';
-import { useStore } from '../store/useStore';
-import { formatCurrency } from '../utils/auth';
+import React, { useState, useEffect } from "react";
+import { Plus, Edit, Trash2, Search } from "lucide-react";
+import { Layout } from "../components/Layout/Layout";
+import { Button } from "../components/ui/Button";
+import { AddProductModal } from "../components/Products/AddProductModal";
+import { useStore } from "../store/useStore";
+import { formatCurrency } from "../utils/auth";
 
 export const Products: React.FC = () => {
-  const { products, deleteProduct } = useStore();
+  const { products, deleteProduct, loadProducts, isLoadingProducts } =
+    useStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const filteredProducts = products.filter(product =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.category.toLowerCase().includes(searchTerm.toLowerCase())
+  useEffect(() => {
+    loadProducts();
+  }, [loadProducts]);
+
+  const filteredProducts = products.filter(
+    (product) =>
+      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.category.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleEdit = (product: any) => {
@@ -28,7 +34,7 @@ export const Products: React.FC = () => {
   };
 
   const handleDelete = (id: string) => {
-    if (window.confirm('Apakah Anda yakin ingin menghapus produk ini?')) {
+    if (window.confirm("Apakah Anda yakin ingin menghapus produk ini?")) {
       deleteProduct(id);
     }
   };
@@ -38,7 +44,9 @@ export const Products: React.FC = () => {
       <div className="p-8">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Manajemen Produk</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              Manajemen Produk
+            </h1>
             <p className="text-gray-600">Kelola produk pet shop Anda</p>
           </div>
           <Button onClick={handleAdd} className="flex items-center space-x-2">
@@ -86,22 +94,26 @@ export const Products: React.FC = () => {
                 {filteredProducts.map((product) => (
                   <tr key={product.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{product.name}</div>
+                      <div className="text-sm font-medium text-gray-900">
+                        {product.name}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-teal-100 text-teal-800">
-                        {product.category}
+                        {product.category.name}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {formatCurrency(product.price)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        product.stock < 10 
-                          ? 'bg-red-100 text-red-800' 
-                          : 'bg-green-100 text-green-800'
-                      }`}>
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          product.stock < 10
+                            ? "bg-red-100 text-red-800"
+                            : "bg-green-100 text-green-800"
+                        }`}
+                      >
                         {product.stock} unit
                       </span>
                     </td>

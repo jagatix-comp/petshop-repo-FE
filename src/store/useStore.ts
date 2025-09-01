@@ -12,7 +12,19 @@ interface StoreState {
 
   // Products
   products: Product[];
-  addProduct: (product: Omit<Product, "id">) => void;
+  isLoadingProducts: boolean;
+  loadProducts: (params?: {
+    search?: string;
+    category?: string;
+    page?: number;
+    limit?: number;
+  }) => Promise<void>;
+  addProduct: (
+    product: Omit<
+      Product,
+      "id" | "created_at" | "updated_at" | "brand" | "category" | "tenant"
+    >
+  ) => void;
   updateProduct: (id: string, product: Partial<Product>) => void;
   deleteProduct: (id: string) => void;
 
@@ -35,42 +47,66 @@ const initialProducts: Product[] = [
     name: "Royal Canin Adult Cat Food",
     price: 125000,
     stock: 50,
-    category: "Makanan Kucing",
+    created_at: "2024-01-01T00:00:00Z",
+    updated_at: "2024-01-01T00:00:00Z",
+    brand: { id: "b1", name: "Royal Canin" },
+    category: { id: "c1", name: "Makanan Kucing" },
+    tenant: { id: "t1", name: "Default Store", location: "Main Store" },
   },
   {
     id: "2",
     name: "Pedigree Adult Dog Food",
     price: 95000,
     stock: 30,
-    category: "Makanan Anjing",
+    created_at: "2024-01-01T00:00:00Z",
+    updated_at: "2024-01-01T00:00:00Z",
+    brand: { id: "b2", name: "Pedigree" },
+    category: { id: "c2", name: "Makanan Anjing" },
+    tenant: { id: "t1", name: "Default Store", location: "Main Store" },
   },
   {
     id: "3",
     name: "Cat Shampoo Premium",
     price: 65000,
     stock: 25,
-    category: "Perawatan Kucing",
+    created_at: "2024-01-01T00:00:00Z",
+    updated_at: "2024-01-01T00:00:00Z",
+    brand: { id: "b3", name: "Premium Pet" },
+    category: { id: "c3", name: "Perawatan Kucing" },
+    tenant: { id: "t1", name: "Default Store", location: "Main Store" },
   },
   {
     id: "4",
     name: "Dog Shampoo Anti Flea",
     price: 75000,
     stock: 20,
-    category: "Perawatan Anjing",
+    created_at: "2024-01-01T00:00:00Z",
+    updated_at: "2024-01-01T00:00:00Z",
+    brand: { id: "b4", name: "Anti Flea Pro" },
+    category: { id: "c4", name: "Perawatan Anjing" },
+    tenant: { id: "t1", name: "Default Store", location: "Main Store" },
   },
   {
     id: "5",
     name: "Bird Cage Medium",
     price: 350000,
     stock: 10,
-    category: "Aksesoris Burung",
+    created_at: "2024-01-01T00:00:00Z",
+    updated_at: "2024-01-01T00:00:00Z",
+    brand: { id: "b5", name: "Cage Master" },
+    category: { id: "c5", name: "Aksesoris Burung" },
+    tenant: { id: "t1", name: "Default Store", location: "Main Store" },
   },
   {
     id: "6",
     name: "Cat Litter 5kg",
     price: 45000,
     stock: 40,
-    category: "Perawatan Kucing",
+    created_at: "2024-01-01T00:00:00Z",
+    updated_at: "2024-01-01T00:00:00Z",
+    brand: { id: "b6", name: "Clean Litter" },
+    category: { id: "c6", name: "Perawatan Kucing" },
+    tenant: { id: "t1", name: "Default Store", location: "Main Store" },
   },
 ];
 
@@ -117,17 +153,17 @@ export const useStore = create<StoreState>((set, get) => ({
   refreshToken: async () => {
     try {
       const response = await apiService.refreshToken();
-      
-      if (response.status === 'success') {
-        localStorage.setItem('accessToken', response.data.accessToken);
+
+      if (response.status === "success") {
+        localStorage.setItem("accessToken", response.data.accessToken);
         return true;
       }
       return false;
     } catch (error) {
-      console.error('Refresh token error:', error);
+      console.error("Refresh token error:", error);
       // If refresh fails, logout user
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('user');
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("user");
       set({ user: null, isAuthenticated: false });
       return false;
     }
@@ -140,10 +176,30 @@ export const useStore = create<StoreState>((set, get) => ({
 
   // Products
   products: initialProducts,
+  isLoadingProducts: false,
+  loadProducts: async (params) => {
+    try {
+      set({ isLoadingProducts: true });
+      const response = await apiService.getProducts(params);
+      if (response.status === "success") {
+        set({ products: response.data, isLoadingProducts: false });
+      } else {
+        set({ isLoadingProducts: false });
+      }
+    } catch (error) {
+      console.error("Failed to load products:", error);
+      set({ isLoadingProducts: false });
+    }
+  },
   addProduct: (product) => {
-    const newProduct = {
+    const newProduct: Product = {
       ...product,
       id: Date.now().toString(),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      brand: { id: "default", name: "Default Brand" },
+      category: { id: "default", name: "Default Category" },
+      tenant: { id: "default", name: "Default Store", location: "Main Store" },
     };
     set((state) => ({ products: [...state.products, newProduct] }));
   },
