@@ -7,15 +7,15 @@ import { useStore } from "../store/useStore";
 import { Brand } from "../types";
 
 export const Brands: React.FC = () => {
-  const { 
-    brands, 
-    isLoadingBrands, 
-    loadBrands, 
-    addBrand, 
-    updateBrand, 
-    deleteBrand 
+  const {
+    brands,
+    isLoadingBrands,
+    loadBrands,
+    addBrand,
+    updateBrand,
+    deleteBrand,
   } = useStore();
-  
+
   const [searchTerm, setSearchTerm] = useState("");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingBrand, setEditingBrand] = useState<Brand | null>(null);
@@ -198,14 +198,22 @@ export const Brands: React.FC = () => {
               />
             </div>
             <div className="flex justify-end space-x-3">
-              <Button variant="secondary" onClick={resetForm} disabled={isSubmitting}>
+              <Button
+                variant="secondary"
+                onClick={resetForm}
+                disabled={isSubmitting}
+              >
                 Batal
               </Button>
               <Button
                 onClick={editingBrand ? handleUpdateBrand : handleAddBrand}
                 disabled={isSubmitting}
               >
-                {isSubmitting ? "Memproses..." : (editingBrand ? "Update" : "Tambah")}
+                {isSubmitting
+                  ? "Memproses..."
+                  : editingBrand
+                  ? "Update"
+                  : "Tambah"}
               </Button>
             </div>
           </div>
