@@ -22,20 +22,24 @@ A modern web-based Point of Sale (POS) system built with React, TypeScript, and 
 ## Environment Setup
 
 ### Development
-
-Update the environment variables in `.env`:
-
+For development, use direct API URL in `.env.development`:
 ```env
 VITE_API_BASE_URL=http://103.54.170.35:8001/api/v1
 VITE_TENANT_NAME=wojo
 ```
 
 ### Production (Vercel)
+For production, use proxy path to avoid mixed content issues:
+```env
+VITE_API_BASE_URL=/api
+VITE_TENANT_NAME=wojo
+```
 
 Set these environment variables in Vercel Dashboard:
-
-- `VITE_API_BASE_URL`: `http://103.54.170.35:8001/api/v1`
+- `VITE_API_BASE_URL`: `/api`  
 - `VITE_TENANT_NAME`: `wojo`
+
+The `vercel.json` file handles the proxy configuration to redirect `/api/*` to the actual API server.
 
 ## Installation
 
