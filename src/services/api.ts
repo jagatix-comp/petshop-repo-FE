@@ -1,14 +1,5 @@
-// Environment Configuration
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
-const TENANT_NAME = import.meta.env.VITE_TENANT_NAME || "wojo";
-
-// Debug logging for environment variables
-console.log("🔧 API Service Configuration:");
-console.log("🌐 API_BASE_URL:", API_BASE_URL);
-console.log("🏢 TENANT_NAME:", TENANT_NAME);
-console.log("🔍 Environment Mode:", import.meta.env.MODE);
-console.log("🚀 Is Production:", import.meta.env.PROD);
-console.log("🌍 Current Location:", window.location.origin);
+import { API_BASE_URL, TENANT_NAME } from '../config/app';
+import { API_ENDPOINTS, STORAGE_KEYS } from '../constants';
 
 interface LoginResponse {
   status: string;
@@ -92,7 +83,7 @@ interface ProductsResponse {
 
 class ApiService {
   private getAuthHeaders() {
-    const token = localStorage.getItem("accessToken");
+    const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
     return {
       "Content-Type": "application/json",
       "x-tenant-name": TENANT_NAME,
@@ -141,8 +132,8 @@ class ApiService {
         }
 
         // If refresh fails, redirect to login
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("user");
+        localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+        localStorage.removeItem(STORAGE_KEYS.USER);
         window.location.href = "/login";
       }
       throw new Error(`API Error: ${response.statusText}`);
@@ -153,7 +144,7 @@ class ApiService {
 
   // Auth endpoints
   async login(username: string, password: string): Promise<LoginResponse> {
-    const endpoint = "/auth/login";
+    const endpoint = API_ENDPOINTS.AUTH.LOGIN;
     const url = `${API_BASE_URL}${endpoint}`;
 
     console.log("🚀 Login attempt:", { url, username, tenant: TENANT_NAME });
@@ -171,17 +162,17 @@ class ApiService {
   }
 
   async refreshToken(): Promise<RefreshTokenResponse> {
-    return this.request<RefreshTokenResponse>("/auth/refresh", {
+    return this.request<RefreshTokenResponse>(API_ENDPOINTS.AUTH.REFRESH, {
       method: "POST",
     });
   }
 
   async logout() {
-    return this.request("/auth/logout", { method: "POST" });
+    return this.request(API_ENDPOINTS.AUTH.LOGOUT, { method: "POST" });
   }
 
   async getCurrentUser() {
-    return this.request<{ user: any }>("/auth/me");
+    return this.request<{ user: any }>(API_ENDPOINTS.AUTH.ME);
   }
 
   // Products endpoints

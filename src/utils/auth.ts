@@ -1,8 +1,9 @@
 import { User } from "../types";
+import { STORAGE_KEYS } from "../constants";
 
 export const getStoredUser = (): User | null => {
-  const userStr = localStorage.getItem("user");
-  const token = localStorage.getItem("accessToken");
+  const userStr = localStorage.getItem(STORAGE_KEYS.USER);
+  const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
 
   if (userStr && token) {
     try {
@@ -15,7 +16,7 @@ export const getStoredUser = (): User | null => {
 };
 
 export const getStoredToken = (): string | null => {
-  return localStorage.getItem("accessToken");
+  return localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
 };
 
 export const isTokenExpired = (token: string): boolean => {

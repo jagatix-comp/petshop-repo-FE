@@ -13,39 +13,40 @@ import {
   Bookmark,
 } from "lucide-react";
 import { useStore } from "../../store/useStore";
+import { ROUTES } from "../../constants";
 
 export const Sidebar: React.FC = () => {
   const logout = useStore((state) => state.logout);
   const location = useLocation();
   const [isProductsOpen, setIsProductsOpen] = useState(
-    location.pathname.includes("/products") ||
-      location.pathname.includes("/brands") ||
-      location.pathname.includes("/categories")
+    location.pathname.includes(ROUTES.PRODUCTS) ||
+      location.pathname.includes(ROUTES.BRANDS) ||
+      location.pathname.includes(ROUTES.CATEGORIES)
   );
 
   useEffect(() => {
     setIsProductsOpen(
-      location.pathname.includes("/products") ||
-        location.pathname.includes("/brands") ||
-        location.pathname.includes("/categories")
+      location.pathname.includes(ROUTES.PRODUCTS) ||
+        location.pathname.includes(ROUTES.BRANDS) ||
+        location.pathname.includes(ROUTES.CATEGORIES)
     );
   }, [location.pathname]);
 
   const navItems = [
-    { path: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+    { path: ROUTES.DASHBOARD, icon: LayoutDashboard, label: "Dashboard" },
     {
-      path: "/products",
+      path: ROUTES.PRODUCTS,
       icon: Package,
       label: "Produk",
       hasDropdown: true,
       children: [
-        { path: "/products", icon: Package, label: "Semua Produk" },
-        { path: "/brands", icon: Tag, label: "Brand" },
-        { path: "/categories", icon: Bookmark, label: "Kategori" },
+        { path: ROUTES.PRODUCTS, icon: Package, label: "Semua Produk" },
+        { path: ROUTES.BRANDS, icon: Tag, label: "Brand" },
+        { path: ROUTES.CATEGORIES, icon: Bookmark, label: "Kategori" },
       ],
     },
-    { path: "/cashier", icon: ShoppingCart, label: "Kasir" },
-    { path: "/reports", icon: FileText, label: "Laporan" },
+    { path: ROUTES.CASHIER, icon: ShoppingCart, label: "Kasir" },
+    { path: ROUTES.REPORTS, icon: FileText, label: "Laporan" },
   ];
 
   return (

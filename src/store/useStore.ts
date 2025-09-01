@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { Product, Transaction, CartItem, User, Brand } from "../types";
 import { apiService } from "../services/api";
+import { STORAGE_KEYS } from "../constants";
 
 interface StoreState {
   // Auth
@@ -151,8 +152,8 @@ export const useStore = create<StoreState>((set, get) => ({
           role: "admin",
         };
 
-        localStorage.setItem("accessToken", response.data.accessToken);
-        localStorage.setItem("user", JSON.stringify(user));
+        localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, response.data.accessToken);
+        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
         set({ user, isAuthenticated: true });
         return true;
       }
@@ -167,22 +168,22 @@ export const useStore = create<StoreState>((set, get) => ({
       const response = await apiService.refreshToken();
 
       if (response.status === "success") {
-        localStorage.setItem("accessToken", response.data.accessToken);
+        localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, response.data.accessToken);
         return true;
       }
       return false;
     } catch (error) {
       console.error("Refresh token error:", error);
       // If refresh fails, logout user
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("user");
+      localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+      localStorage.removeItem(STORAGE_KEYS.USER);
       set({ user: null, isAuthenticated: false });
       return false;
     }
   },
   logout: () => {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("user");
+    localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+    localStorage.removeItem(STORAGE_KEYS.USER);
     set({ user: null, isAuthenticated: false });
   },
 

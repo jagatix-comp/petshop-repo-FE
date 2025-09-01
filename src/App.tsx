@@ -15,6 +15,7 @@ import { Reports } from "./pages/Reports";
 import { useStore } from "./store/useStore";
 import { getStoredUser } from "./utils/auth";
 import { useAuth } from "./hooks/useAuth";
+import { ROUTES } from "./constants";
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -41,9 +42,9 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/login" element={<Login />} />
+        <Route path={ROUTES.LOGIN} element={<Login />} />
         <Route
-          path="/dashboard"
+          path={ROUTES.DASHBOARD}
           element={
             <ProtectedRoute>
               <Dashboard />
@@ -51,7 +52,7 @@ function App() {
           }
         />
         <Route
-          path="/products"
+          path={ROUTES.PRODUCTS}
           element={
             <ProtectedRoute>
               <Products />
@@ -59,7 +60,7 @@ function App() {
           }
         />
         <Route
-          path="/brands"
+          path={ROUTES.BRANDS}
           element={
             <ProtectedRoute>
               <Brands />
@@ -67,7 +68,7 @@ function App() {
           }
         />
         <Route
-          path="/categories"
+          path={ROUTES.CATEGORIES}
           element={
             <ProtectedRoute>
               <Categories />
@@ -75,7 +76,7 @@ function App() {
           }
         />
         <Route
-          path="/cashier"
+          path={ROUTES.CASHIER}
           element={
             <ProtectedRoute>
               <Cashier />
@@ -83,7 +84,7 @@ function App() {
           }
         />
         <Route
-          path="/reports"
+          path={ROUTES.REPORTS}
           element={
             <ProtectedRoute>
               <Reports />
@@ -93,7 +94,7 @@ function App() {
         <Route
           path="/"
           element={
-            <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />
+            <Navigate to={isAuthenticated ? ROUTES.DASHBOARD : ROUTES.LOGIN} replace />
           }
         />
       </Routes>
