@@ -39,3 +39,27 @@ export interface User {
   email: string;
   role: string;
 }
+
+export interface Brand {
+  id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+  tenant: {
+    id: string;
+    name: string;
+    location: string;
+  };
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+  tenant: {
+    id: string;
+    name: string;
+    location: string;
+  };
+}

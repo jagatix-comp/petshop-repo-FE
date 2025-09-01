@@ -18,6 +18,36 @@ interface RefreshTokenResponse {
   };
 }
 
+interface Brand {
+  id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+  tenant: {
+    id: string;
+    name: string;
+    location: string;
+  };
+}
+
+interface BrandsResponse {
+  status: string;
+  message: string;
+  metadata: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+  data: Brand[];
+}
+
+interface BrandResponse {
+  status: string;
+  message: string;
+  data?: Brand;
+}
+
 interface Product {
   id: string;
   name: string;
@@ -186,6 +216,40 @@ class ApiService {
     return this.request<{ products: any[] }>(
       `/products/low-stock?threshold=${threshold}`
     );
+  }
+
+  // Brands endpoints
+  async getBrands(params?: {
+    search?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<BrandsResponse> {
+    const query = new URLSearchParams();
+    if (params?.search) query.append("search", params.search);
+    if (params?.page) query.append("page", params.page.toString());
+    if (params?.limit) query.append("limit", params.limit.toString());
+
+    return this.request<BrandsResponse>(`/brands?${query}`);
+  }
+
+  async createBrand(data: { name: string }): Promise<BrandResponse> {
+    return this.request<BrandResponse>("/brands", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateBrand(id: string, data: { name: string }): Promise<BrandResponse> {
+    return this.request<BrandResponse>(`/brands/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteBrand(id: string): Promise<BrandResponse> {
+    return this.request<BrandResponse>(`/brands/${id}`, {
+      method: "DELETE",
+    });
   }
 
   // Transactions endpoints

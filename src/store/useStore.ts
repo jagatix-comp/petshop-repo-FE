@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { Product, Transaction, CartItem, User } from "../types";
+import { Product, Transaction, CartItem, User, Brand } from "../types";
 import { apiService } from "../services/api";
 
 interface StoreState {
@@ -27,6 +27,18 @@ interface StoreState {
   ) => void;
   updateProduct: (id: string, product: Partial<Product>) => void;
   deleteProduct: (id: string) => void;
+
+  // Brands
+  brands: Brand[];
+  isLoadingBrands: boolean;
+  loadBrands: (params?: {
+    search?: string;
+    page?: number;
+    limit?: number;
+  }) => Promise<void>;
+  addBrand: (name: string) => Promise<boolean>;
+  updateBrand: (id: string, name: string) => Promise<boolean>;
+  deleteBrand: (id: string) => Promise<boolean>;
 
   // Transactions
   transactions: Transaction[];
@@ -214,6 +226,66 @@ export const useStore = create<StoreState>((set, get) => ({
     set((state) => ({
       products: state.products.filter((product) => product.id !== id),
     }));
+  },
+
+  // Brands
+  brands: [],
+  isLoadingBrands: false,
+  loadBrands: async (params) => {
+    try {
+      set({ isLoadingBrands: true });
+      const response = await apiService.getBrands(params);
+      if (response.status === "success") {
+        set({ brands: response.data, isLoadingBrands: false });
+      } else {
+        set({ isLoadingBrands: false });
+      }
+    } catch (error) {
+      console.error("Failed to load brands:", error);
+      set({ isLoadingBrands: false });
+    }
+  },
+  addBrand: async (name) => {
+    try {
+      const response = await apiService.createBrand({ name });
+      if (response.status === "success") {
+        // Reload brands after adding
+        await get().loadBrands();
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("Failed to add brand:", error);
+      return false;
+    }
+  },
+  updateBrand: async (id, name) => {
+    try {
+      const response = await apiService.updateBrand(id, { name });
+      if (response.status === "success") {
+        // Reload brands after updating
+        await get().loadBrands();
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("Failed to update brand:", error);
+      return false;
+    }
+  },
+  deleteBrand: async (id) => {
+    try {
+      const response = await apiService.deleteBrand(id);
+      if (response.status === "success") {
+        // Reload brands after deleting
+        await get().loadBrands();
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("Failed to delete brand:", error);
+      return false;
+    }
   },
 
   // Transactions

@@ -1,39 +1,45 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Plus, Search, Edit, Trash2 } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { Modal } from "../components/ui/Modal";
 import { Layout } from "../components/Layout/Layout";
-
-interface Brand {
-  id: string;
-  name: string;
-  created_at: string;
-  updated_at: string;
-}
+import { useStore } from "../store/useStore";
+import { Brand } from "../types";
 
 export const Brands: React.FC = () => {
-  const [brands, setBrands] = useState<Brand[]>([]);
+  const { 
+    brands, 
+    isLoadingBrands, 
+    loadBrands, 
+    addBrand, 
+    updateBrand, 
+    deleteBrand 
+  } = useStore();
+  
   const [searchTerm, setSearchTerm] = useState("");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingBrand, setEditingBrand] = useState<Brand | null>(null);
   const [newBrandName, setNewBrandName] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    loadBrands();
+  }, [loadBrands]);
 
   // Filter brands based on search term
   const filteredBrands = brands.filter((brand) =>
     brand.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleAddBrand = () => {
+  const handleAddBrand = async () => {
     if (newBrandName.trim()) {
-      const newBrand: Brand = {
-        id: Date.now().toString(),
-        name: newBrandName.trim(),
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
-      setBrands([...brands, newBrand]);
-      setNewBrandName("");
-      setIsAddModalOpen(false);
+      setIsSubmitting(true);
+      const success = await addBrand(newBrandName.trim());
+      if (success) {
+        setNewBrandName("");
+        setIsAddModalOpen(false);
+      }
+      setIsSubmitting(false);
     }
   };
 
@@ -43,28 +49,22 @@ export const Brands: React.FC = () => {
     setIsAddModalOpen(true);
   };
 
-  const handleUpdateBrand = () => {
+  const handleUpdateBrand = async () => {
     if (editingBrand && newBrandName.trim()) {
-      setBrands(
-        brands.map((brand) =>
-          brand.id === editingBrand.id
-            ? {
-                ...brand,
-                name: newBrandName.trim(),
-                updated_at: new Date().toISOString(),
-              }
-            : brand
-        )
-      );
-      setEditingBrand(null);
-      setNewBrandName("");
-      setIsAddModalOpen(false);
+      setIsSubmitting(true);
+      const success = await updateBrand(editingBrand.id, newBrandName.trim());
+      if (success) {
+        setEditingBrand(null);
+        setNewBrandName("");
+        setIsAddModalOpen(false);
+      }
+      setIsSubmitting(false);
     }
   };
 
-  const handleDeleteBrand = (id: string) => {
+  const handleDeleteBrand = async (id: string) => {
     if (confirm("Apakah Anda yakin ingin menghapus brand ini?")) {
-      setBrands(brands.filter((brand) => brand.id !== id));
+      await deleteBrand(id);
     }
   };
 
@@ -131,12 +131,12 @@ export const Brands: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-500">
-                      {new Date(brand.created_at).toLocaleDateString("id-ID")}
+                      {new Date(brand.createdAt).toLocaleDateString("id-ID")}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-500">
-                      {new Date(brand.updated_at).toLocaleDateString("id-ID")}
+                      {new Date(brand.updatedAt).toLocaleDateString("id-ID")}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -160,13 +160,17 @@ export const Brands: React.FC = () => {
             </tbody>
           </table>
 
-          {filteredBrands.length === 0 && (
+          {isLoadingBrands ? (
+            <div className="text-center py-8 text-gray-500">
+              Memuat data brands...
+            </div>
+          ) : filteredBrands.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               {searchTerm
                 ? "Tidak ada brand yang ditemukan"
                 : "Belum ada brand"}
             </div>
-          )}
+          ) : null}
         </div>
 
         {/* Add/Edit Brand Modal */}
@@ -194,13 +198,14 @@ export const Brands: React.FC = () => {
               />
             </div>
             <div className="flex justify-end space-x-3">
-              <Button variant="secondary" onClick={resetForm}>
+              <Button variant="secondary" onClick={resetForm} disabled={isSubmitting}>
                 Batal
               </Button>
               <Button
                 onClick={editingBrand ? handleUpdateBrand : handleAddBrand}
+                disabled={isSubmitting}
               >
-                {editingBrand ? "Update" : "Tambah"}
+                {isSubmitting ? "Memproses..." : (editingBrand ? "Update" : "Tambah")}
               </Button>
             </div>
           </div>
