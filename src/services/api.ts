@@ -1,6 +1,5 @@
 // Environment Configuration
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://103.54.170.35:8001/api/v1";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
 const TENANT_NAME = import.meta.env.VITE_TENANT_NAME || "wojo";
 
 // Debug logging for environment variables
@@ -9,6 +8,7 @@ console.log("🌐 API_BASE_URL:", API_BASE_URL);
 console.log("🏢 TENANT_NAME:", TENANT_NAME);
 console.log("🔍 Environment Mode:", import.meta.env.MODE);
 console.log("🚀 Is Production:", import.meta.env.PROD);
+console.log("🌍 Current Location:", window.location.origin);
 
 interface LoginResponse {
   status: string;

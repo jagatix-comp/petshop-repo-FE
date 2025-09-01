@@ -19,6 +19,15 @@ export default defineConfig(({ command, mode }) => {
     server: {
       port: 5173,
       host: true,
+      // Proxy for development to avoid CORS issues
+      proxy: mode === 'development' ? {
+        '/api': {
+          target: 'http://103.54.170.35:8001/api/v1',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api/, ''),
+          secure: false,
+        }
+      } : undefined
     },
     preview: {
       port: 4173,
