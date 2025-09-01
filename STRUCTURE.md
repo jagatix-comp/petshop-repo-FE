@@ -41,31 +41,37 @@ src/
 ## Key Features
 
 ### 📁 **Organized Structure**
+
 - Logical separation of concerns
 - Clean import/export pattern
 - Consistent naming conventions
 
 ### 🔧 **Configuration Management**
+
 - Centralized environment configuration
 - Constants for routes and API endpoints
 - Type-safe configuration
 
 ### 🎯 **Component Organization**
+
 - Feature-based component grouping
 - Reusable UI components
 - Layout components for consistency
 
 ### 📡 **API Management**
+
 - Centralized API service
 - Type-safe API calls
 - Error handling and logging
 
 ### 🗃️ **State Management**
+
 - Zustand for global state
 - Custom hooks for complex logic
 - Type-safe store operations
 
 ### 🛡️ **Type Safety**
+
 - Comprehensive TypeScript types
 - Interface definitions for all data structures
 - Type-safe constants and configurations

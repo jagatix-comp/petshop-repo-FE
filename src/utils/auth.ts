@@ -21,7 +21,7 @@ export const getStoredToken = (): string | null => {
 
 export const isTokenExpired = (token: string): boolean => {
   try {
-    const payload = JSON.parse(atob(token.split('.')[1]));
+    const payload = JSON.parse(atob(token.split(".")[1]));
     const currentTime = Date.now() / 1000;
     return payload.exp < currentTime;
   } catch {
@@ -31,7 +31,7 @@ export const isTokenExpired = (token: string): boolean => {
 
 export const shouldRefreshToken = (token: string): boolean => {
   try {
-    const payload = JSON.parse(atob(token.split('.')[1]));
+    const payload = JSON.parse(atob(token.split(".")[1]));
     const currentTime = Date.now() / 1000;
     const timeUntilExpiry = payload.exp - currentTime;
     // Refresh if token expires in less than 5 minutes

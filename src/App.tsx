@@ -13,7 +13,6 @@ import { Categories } from "./pages/Categories";
 import { Cashier } from "./pages/Cashier";
 import { Reports } from "./pages/Reports";
 import { useStore } from "./store/useStore";
-import { getStoredUser } from "./utils/auth";
 import { useAuth } from "./hooks/useAuth";
 import { ROUTES } from "./constants";
 
@@ -26,18 +25,23 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
 };
 
 function App() {
-  const { isAuthenticated } = useStore();
+  const { isAuthenticated, initializeAuth, loadProducts, loadBrands } = useStore();
 
   // Initialize auth hook for automatic token refresh
   useAuth();
 
   useEffect(() => {
-    // Check if user is already logged in
-    const storedUser = getStoredUser();
-    if (storedUser) {
-      useStore.setState({ user: storedUser, isAuthenticated: true });
+    // Initialize authentication state from localStorage
+    initializeAuth();
+  }, [initializeAuth]);
+
+  useEffect(() => {
+    // Load initial data when authenticated
+    if (isAuthenticated) {
+      loadProducts();
+      loadBrands();
     }
-  }, []);
+  }, [isAuthenticated, loadProducts, loadBrands]);
 
   return (
     <Router>
@@ -94,7 +98,10 @@ function App() {
         <Route
           path="/"
           element={
-            <Navigate to={isAuthenticated ? ROUTES.DASHBOARD : ROUTES.LOGIN} replace />
+            <Navigate
+              to={isAuthenticated ? ROUTES.DASHBOARD : ROUTES.LOGIN}
+              replace
+            />
           }
         />
       </Routes>

@@ -1,59 +1,59 @@
 // Navigation Routes
 export const ROUTES = {
-  LOGIN: '/login',
-  DASHBOARD: '/dashboard',
-  PRODUCTS: '/products',
-  BRANDS: '/brands',
-  CATEGORIES: '/categories',
-  CASHIER: '/cashier',
-  REPORTS: '/reports',
+  LOGIN: "/login",
+  DASHBOARD: "/dashboard",
+  PRODUCTS: "/products",
+  BRANDS: "/brands",
+  CATEGORIES: "/categories",
+  CASHIER: "/cashier",
+  REPORTS: "/reports",
 } as const;
 
 // API Endpoints
 export const API_ENDPOINTS = {
   AUTH: {
-    LOGIN: '/auth/login',
-    REFRESH: '/auth/refresh',
-    LOGOUT: '/auth/logout',
-    ME: '/auth/me',
+    LOGIN: "/auth/login",
+    REFRESH: "/auth/refresh",
+    LOGOUT: "/auth/logout",
+    ME: "/auth/me",
   },
   PRODUCTS: {
-    LIST: '/products',
-    CREATE: '/products',
+    LIST: "/products",
+    CREATE: "/products",
     UPDATE: (id: string) => `/products/${id}`,
     DELETE: (id: string) => `/products/${id}`,
   },
   BRANDS: {
-    LIST: '/brands',
-    CREATE: '/brands',
+    LIST: "/brands",
+    CREATE: "/brands",
     UPDATE: (id: string) => `/brands/${id}`,
     DELETE: (id: string) => `/brands/${id}`,
   },
   CATEGORIES: {
-    LIST: '/categories',
-    CREATE: '/categories',
+    LIST: "/categories",
+    CREATE: "/categories",
     UPDATE: (id: string) => `/categories/${id}`,
     DELETE: (id: string) => `/categories/${id}`,
   },
   TRANSACTIONS: {
-    LIST: '/transactions',
-    CREATE: '/transactions',
+    LIST: "/transactions",
+    CREATE: "/transactions",
     GET: (id: string) => `/transactions/${id}`,
   },
   DASHBOARD: {
-    STATS: '/dashboard/stats',
+    STATS: "/dashboard/stats",
   },
   REPORTS: {
-    SALES: '/reports/sales',
-    PRODUCTS: '/reports/products',
+    SALES: "/reports/sales",
+    PRODUCTS: "/reports/products",
   },
 } as const;
 
 // Storage Keys
 export const STORAGE_KEYS = {
-  ACCESS_TOKEN: 'accessToken',
-  USER: 'user',
-  REFRESH_TOKEN: 'refreshToken',
+  ACCESS_TOKEN: "accessToken",
+  USER: "user",
+  REFRESH_TOKEN: "refreshToken",
 } as const;
 
 // HTTP Status Codes

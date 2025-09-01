@@ -10,6 +10,7 @@ interface StoreState {
   login: (username: string, password: string) => Promise<boolean>;
   refreshToken: () => Promise<boolean>;
   logout: () => void;
+  initializeAuth: () => void;
 
   // Products
   products: Product[];
@@ -20,14 +21,19 @@ interface StoreState {
     page?: number;
     limit?: number;
   }) => Promise<void>;
-  addProduct: (
-    product: Omit<
-      Product,
-      "id" | "created_at" | "updated_at" | "brand" | "category" | "tenant"
-    >
-  ) => void;
-  updateProduct: (id: string, product: Partial<Product>) => void;
-  deleteProduct: (id: string) => void;
+  addProduct: (product: {
+    name: string;
+    price: number;
+    stock: number;
+    category: string;
+  }) => Promise<boolean>;
+  updateProduct: (id: string, product: Partial<{
+    name: string;
+    price: number;
+    stock: number;
+    category: string;
+  }>) => Promise<boolean>;
+  deleteProduct: (id: string) => Promise<boolean>;
 
   // Brands
   brands: Brand[];
@@ -53,89 +59,6 @@ interface StoreState {
   updateCartItemQuantity: (productId: string, quantity: number) => void;
 }
 
-// Dummy initial data
-const initialProducts: Product[] = [
-  {
-    id: "1",
-    name: "Royal Canin Adult Cat Food",
-    price: 125000,
-    stock: 50,
-    created_at: "2024-01-01T00:00:00Z",
-    updated_at: "2024-01-01T00:00:00Z",
-    brand: { id: "b1", name: "Royal Canin" },
-    category: { id: "c1", name: "Makanan Kucing" },
-    tenant: { id: "t1", name: "Default Store", location: "Main Store" },
-  },
-  {
-    id: "2",
-    name: "Pedigree Adult Dog Food",
-    price: 95000,
-    stock: 30,
-    created_at: "2024-01-01T00:00:00Z",
-    updated_at: "2024-01-01T00:00:00Z",
-    brand: { id: "b2", name: "Pedigree" },
-    category: { id: "c2", name: "Makanan Anjing" },
-    tenant: { id: "t1", name: "Default Store", location: "Main Store" },
-  },
-  {
-    id: "3",
-    name: "Cat Shampoo Premium",
-    price: 65000,
-    stock: 25,
-    created_at: "2024-01-01T00:00:00Z",
-    updated_at: "2024-01-01T00:00:00Z",
-    brand: { id: "b3", name: "Premium Pet" },
-    category: { id: "c3", name: "Perawatan Kucing" },
-    tenant: { id: "t1", name: "Default Store", location: "Main Store" },
-  },
-  {
-    id: "4",
-    name: "Dog Shampoo Anti Flea",
-    price: 75000,
-    stock: 20,
-    created_at: "2024-01-01T00:00:00Z",
-    updated_at: "2024-01-01T00:00:00Z",
-    brand: { id: "b4", name: "Anti Flea Pro" },
-    category: { id: "c4", name: "Perawatan Anjing" },
-    tenant: { id: "t1", name: "Default Store", location: "Main Store" },
-  },
-  {
-    id: "5",
-    name: "Bird Cage Medium",
-    price: 350000,
-    stock: 10,
-    created_at: "2024-01-01T00:00:00Z",
-    updated_at: "2024-01-01T00:00:00Z",
-    brand: { id: "b5", name: "Cage Master" },
-    category: { id: "c5", name: "Aksesoris Burung" },
-    tenant: { id: "t1", name: "Default Store", location: "Main Store" },
-  },
-  {
-    id: "6",
-    name: "Cat Litter 5kg",
-    price: 45000,
-    stock: 40,
-    created_at: "2024-01-01T00:00:00Z",
-    updated_at: "2024-01-01T00:00:00Z",
-    brand: { id: "b6", name: "Clean Litter" },
-    category: { id: "c6", name: "Perawatan Kucing" },
-    tenant: { id: "t1", name: "Default Store", location: "Main Store" },
-  },
-];
-
-const initialTransactions: Transaction[] = [
-  {
-    id: "1",
-    date: new Date().toISOString().split("T")[0],
-    items: [
-      { product: initialProducts[0], quantity: 2 },
-      { product: initialProducts[2], quantity: 1 },
-    ],
-    total: 315000,
-    cashier: "Admin",
-  },
-];
-
 export const useStore = create<StoreState>((set, get) => ({
   // Auth
   user: null,
@@ -152,7 +75,10 @@ export const useStore = create<StoreState>((set, get) => ({
           role: "admin",
         };
 
-        localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, response.data.accessToken);
+        localStorage.setItem(
+          STORAGE_KEYS.ACCESS_TOKEN,
+          response.data.accessToken
+        );
         localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
         set({ user, isAuthenticated: true });
         return true;
@@ -168,7 +94,10 @@ export const useStore = create<StoreState>((set, get) => ({
       const response = await apiService.refreshToken();
 
       if (response.status === "success") {
-        localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, response.data.accessToken);
+        localStorage.setItem(
+          STORAGE_KEYS.ACCESS_TOKEN,
+          response.data.accessToken
+        );
         return true;
       }
       return false;
@@ -186,9 +115,24 @@ export const useStore = create<StoreState>((set, get) => ({
     localStorage.removeItem(STORAGE_KEYS.USER);
     set({ user: null, isAuthenticated: false });
   },
+  initializeAuth: () => {
+    try {
+      const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+      const userData = localStorage.getItem(STORAGE_KEYS.USER);
+      
+      if (token && userData) {
+        const user = JSON.parse(userData);
+        set({ user, isAuthenticated: true });
+      }
+    } catch (error) {
+      console.error("Failed to initialize auth:", error);
+      localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+      localStorage.removeItem(STORAGE_KEYS.USER);
+    }
+  },
 
   // Products
-  products: initialProducts,
+  products: [],
   isLoadingProducts: false,
   loadProducts: async (params) => {
     try {
@@ -204,29 +148,44 @@ export const useStore = create<StoreState>((set, get) => ({
       set({ isLoadingProducts: false });
     }
   },
-  addProduct: (product) => {
-    const newProduct: Product = {
-      ...product,
-      id: Date.now().toString(),
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      brand: { id: "default", name: "Default Brand" },
-      category: { id: "default", name: "Default Category" },
-      tenant: { id: "default", name: "Default Store", location: "Main Store" },
-    };
-    set((state) => ({ products: [...state.products, newProduct] }));
+  addProduct: async (product) => {
+    try {
+      const response = await apiService.createProduct(product);
+      if (response && response.product) {
+        // Reload products after adding
+        await get().loadProducts();
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("Failed to add product:", error);
+      return false;
+    }
   },
-  updateProduct: (id, updatedProduct) => {
-    set((state) => ({
-      products: state.products.map((product) =>
-        product.id === id ? { ...product, ...updatedProduct } : product
-      ),
-    }));
+  updateProduct: async (id, updatedProduct) => {
+    try {
+      const response = await apiService.updateProduct(id, updatedProduct);
+      if (response && response.product) {
+        // Reload products after updating
+        await get().loadProducts();
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("Failed to update product:", error);
+      return false;
+    }
   },
-  deleteProduct: (id) => {
-    set((state) => ({
-      products: state.products.filter((product) => product.id !== id),
-    }));
+  deleteProduct: async (id) => {
+    try {
+      await apiService.deleteProduct(id);
+      // Reload products after deleting
+      await get().loadProducts();
+      return true;
+    } catch (error) {
+      console.error("Failed to delete product:", error);
+      return false;
+    }
   },
 
   // Brands
@@ -290,7 +249,7 @@ export const useStore = create<StoreState>((set, get) => ({
   },
 
   // Transactions
-  transactions: initialTransactions,
+  transactions: [],
   addTransaction: (items, total) => {
     const newTransaction: Transaction = {
       id: Date.now().toString(),
