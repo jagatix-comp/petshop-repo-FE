@@ -1,6 +1,13 @@
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api/v1";
-const TENANT_NAME = import.meta.env.VITE_TENANT_NAME || "default";
+// Environment Configuration
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://103.54.170.35:8001/api/v1";
+const TENANT_NAME = import.meta.env.VITE_TENANT_NAME || "wojo";
+
+// Debug logging for environment variables
+console.log('🔧 API Service Configuration:');
+console.log('🌐 API_BASE_URL:', API_BASE_URL);
+console.log('🏢 TENANT_NAME:', TENANT_NAME);
+console.log('🔍 Environment Mode:', import.meta.env.MODE);
+console.log('🚀 Is Production:', import.meta.env.PROD);
 
 interface LoginResponse {
   status: string;
@@ -145,10 +152,21 @@ class ApiService {
 
   // Auth endpoints
   async login(username: string, password: string): Promise<LoginResponse> {
-    return this.request<LoginResponse>("/auth/login", {
-      method: "POST",
-      body: JSON.stringify({ username, password }),
-    });
+    const endpoint = "/auth/login";
+    const url = `${API_BASE_URL}${endpoint}`;
+    
+    console.log('🚀 Login attempt:', { url, username, tenant: TENANT_NAME });
+    
+    try {
+      return await this.request<LoginResponse>(endpoint, {
+        method: "POST",
+        body: JSON.stringify({ username, password }),
+      });
+    } catch (error) {
+      console.error('❌ Login failed:', error);
+      console.error('🔍 URL tried:', url);
+      throw error;
+    }
   }
 
   async refreshToken(): Promise<RefreshTokenResponse> {
