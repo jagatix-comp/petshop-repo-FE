@@ -14,6 +14,32 @@ export const getStoredUser = (): User | null => {
   return null;
 };
 
+export const getStoredToken = (): string | null => {
+  return localStorage.getItem("accessToken");
+};
+
+export const isTokenExpired = (token: string): boolean => {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const currentTime = Date.now() / 1000;
+    return payload.exp < currentTime;
+  } catch {
+    return true;
+  }
+};
+
+export const shouldRefreshToken = (token: string): boolean => {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const currentTime = Date.now() / 1000;
+    const timeUntilExpiry = payload.exp - currentTime;
+    // Refresh if token expires in less than 5 minutes
+    return timeUntilExpiry < 300;
+  } catch {
+    return true;
+  }
+};
+
 export const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat("id-ID", {
     style: "currency",

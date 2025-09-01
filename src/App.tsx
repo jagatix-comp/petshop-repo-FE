@@ -7,6 +7,7 @@ import { Cashier } from './pages/Cashier';
 import { Reports } from './pages/Reports';
 import { useStore } from './store/useStore';
 import { getStoredUser } from './utils/auth';
+import { useAuth } from './hooks/useAuth';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const isAuthenticated = useStore((state) => state.isAuthenticated);
@@ -16,6 +17,9 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
 function App() {
   const { isAuthenticated } = useStore();
+  
+  // Initialize auth hook for automatic token refresh
+  useAuth();
 
   useEffect(() => {
     // Check if user is already logged in

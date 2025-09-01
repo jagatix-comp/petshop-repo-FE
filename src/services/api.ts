@@ -10,6 +10,14 @@ interface LoginResponse {
   };
 }
 
+interface RefreshTokenResponse {
+  status: string;
+  message: string;
+  data: {
+    accessToken: string;
+  };
+}
+
 class ApiService {
   private getAuthHeaders() {
     const token = localStorage.getItem("accessToken");
@@ -33,7 +41,27 @@ class ApiService {
     const response = await fetch(url, config);
 
     if (!response.ok) {
-      if (response.status === 401) {
+      if (response.status === 401 && endpoint !== '/auth/refresh' && endpoint !== '/auth/login') {
+        // Try to refresh token
+        try {
+          const refreshResponse = await this.refreshToken();
+          if (refreshResponse.status === 'success') {
+            localStorage.setItem('accessToken', refreshResponse.data.accessToken);
+            // Retry the original request with new token
+            const retryConfig: RequestInit = {
+              ...config,
+              headers: this.getAuthHeaders(),
+            };
+            const retryResponse = await fetch(url, retryConfig);
+            if (retryResponse.ok) {
+              return retryResponse.json();
+            }
+          }
+        } catch (refreshError) {
+          console.error('Token refresh failed:', refreshError);
+        }
+        
+        // If refresh fails, redirect to login
         localStorage.removeItem("accessToken");
         localStorage.removeItem("user");
         window.location.href = "/login";
@@ -49,6 +77,12 @@ class ApiService {
     return this.request<LoginResponse>("/auth/login", {
       method: "POST",
       body: JSON.stringify({ username, password }),
+    });
+  }
+
+  async refreshToken(): Promise<RefreshTokenResponse> {
+    return this.request<RefreshTokenResponse>("/auth/refresh", {
+      method: "POST",
     });
   }
 

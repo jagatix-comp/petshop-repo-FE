@@ -7,6 +7,7 @@ interface StoreState {
   user: User | null;
   isAuthenticated: boolean;
   login: (username: string, password: string) => Promise<boolean>;
+  refreshToken: () => Promise<boolean>;
   logout: () => void;
 
   // Products
@@ -110,6 +111,24 @@ export const useStore = create<StoreState>((set, get) => ({
       return false;
     } catch (error) {
       console.error("Login error:", error);
+      return false;
+    }
+  },
+  refreshToken: async () => {
+    try {
+      const response = await apiService.refreshToken();
+      
+      if (response.status === 'success') {
+        localStorage.setItem('accessToken', response.data.accessToken);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Refresh token error:', error);
+      // If refresh fails, logout user
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('user');
+      set({ user: null, isAuthenticated: false });
       return false;
     }
   },
