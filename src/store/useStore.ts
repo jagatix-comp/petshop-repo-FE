@@ -1,5 +1,12 @@
 import { create } from "zustand";
-import { Product, Transaction, CartItem, User, Brand } from "../types";
+import {
+  Product,
+  Transaction,
+  CartItem,
+  User,
+  Brand,
+  Category,
+} from "../types";
 import { apiService } from "../services/api";
 import { STORAGE_KEYS } from "../constants";
 
@@ -27,12 +34,15 @@ interface StoreState {
     stock: number;
     category: string;
   }) => Promise<boolean>;
-  updateProduct: (id: string, product: Partial<{
-    name: string;
-    price: number;
-    stock: number;
-    category: string;
-  }>) => Promise<boolean>;
+  updateProduct: (
+    id: string,
+    product: Partial<{
+      name: string;
+      price: number;
+      stock: number;
+      category: string;
+    }>
+  ) => Promise<boolean>;
   deleteProduct: (id: string) => Promise<boolean>;
 
   // Brands
@@ -46,6 +56,18 @@ interface StoreState {
   addBrand: (name: string) => Promise<boolean>;
   updateBrand: (id: string, name: string) => Promise<boolean>;
   deleteBrand: (id: string) => Promise<boolean>;
+
+  // Categories
+  categories: Category[];
+  isLoadingCategories: boolean;
+  loadCategories: (params?: {
+    search?: string;
+    page?: number;
+    limit?: number;
+  }) => Promise<void>;
+  addCategory: (name: string) => Promise<boolean>;
+  updateCategory: (id: string, name: string) => Promise<boolean>;
+  deleteCategory: (id: string) => Promise<boolean>;
 
   // Transactions
   transactions: Transaction[];
@@ -119,7 +141,7 @@ export const useStore = create<StoreState>((set, get) => ({
     try {
       const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
       const userData = localStorage.getItem(STORAGE_KEYS.USER);
-      
+
       if (token && userData) {
         const user = JSON.parse(userData);
         set({ user, isAuthenticated: true });
@@ -244,6 +266,66 @@ export const useStore = create<StoreState>((set, get) => ({
       return false;
     } catch (error) {
       console.error("Failed to delete brand:", error);
+      return false;
+    }
+  },
+
+  // Categories
+  categories: [],
+  isLoadingCategories: false,
+  loadCategories: async (params) => {
+    try {
+      set({ isLoadingCategories: true });
+      const response = await apiService.getCategories(params);
+      if (response.status === "success") {
+        set({ categories: response.data, isLoadingCategories: false });
+      } else {
+        set({ isLoadingCategories: false });
+      }
+    } catch (error) {
+      console.error("Failed to load categories:", error);
+      set({ isLoadingCategories: false });
+    }
+  },
+  addCategory: async (name) => {
+    try {
+      const response = await apiService.createCategory({ name });
+      if (response.status === "success") {
+        // Reload categories after adding
+        await get().loadCategories();
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("Failed to add category:", error);
+      return false;
+    }
+  },
+  updateCategory: async (id, name) => {
+    try {
+      const response = await apiService.updateCategory(id, { name });
+      if (response.status === "success") {
+        // Reload categories after updating
+        await get().loadCategories();
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("Failed to update category:", error);
+      return false;
+    }
+  },
+  deleteCategory: async (id) => {
+    try {
+      const response = await apiService.deleteCategory(id);
+      if (response.status === "success") {
+        // Reload categories after deleting
+        await get().loadCategories();
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("Failed to delete category:", error);
       return false;
     }
   },

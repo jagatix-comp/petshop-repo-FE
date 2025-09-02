@@ -1,5 +1,11 @@
-import { API_BASE_URL, TENANT_NAME } from '../config/app';
-import { API_ENDPOINTS, STORAGE_KEYS } from '../constants';
+import { API_BASE_URL, TENANT_NAME } from "../config/app";
+import { API_ENDPOINTS, STORAGE_KEYS } from "../constants";
+import type {
+  BrandsResponse,
+  BrandResponse,
+  CategoriesResponse,
+  CategoryResponse,
+} from "../types";
 
 interface LoginResponse {
   status: string;
@@ -15,36 +21,6 @@ interface RefreshTokenResponse {
   data: {
     accessToken: string;
   };
-}
-
-interface Brand {
-  id: string;
-  name: string;
-  createdAt: string;
-  updatedAt: string;
-  tenant: {
-    id: string;
-    name: string;
-    location: string;
-  };
-}
-
-interface BrandsResponse {
-  status: string;
-  message: string;
-  metadata: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-  data: Brand[];
-}
-
-interface BrandResponse {
-  status: string;
-  message: string;
-  data?: Brand;
 }
 
 interface Product {
@@ -261,6 +237,43 @@ class ApiService {
 
   async deleteBrand(id: string): Promise<BrandResponse> {
     return this.request<BrandResponse>(`/brands/${id}`, {
+      method: "DELETE",
+    });
+  }
+
+  // Categories endpoints
+  async getCategories(params?: {
+    search?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<CategoriesResponse> {
+    const query = new URLSearchParams();
+    if (params?.search) query.append("search", params.search);
+    if (params?.page) query.append("page", params.page.toString());
+    if (params?.limit) query.append("limit", params.limit.toString());
+
+    return this.request<CategoriesResponse>(`/categories?${query}`);
+  }
+
+  async createCategory(data: { name: string }): Promise<CategoryResponse> {
+    return this.request<CategoryResponse>("/categories", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateCategory(
+    id: string,
+    data: { name: string }
+  ): Promise<CategoryResponse> {
+    return this.request<CategoryResponse>(`/categories/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteCategory(id: string): Promise<CategoryResponse> {
+    return this.request<CategoryResponse>(`/categories/${id}`, {
       method: "DELETE",
     });
   }

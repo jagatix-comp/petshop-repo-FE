@@ -25,7 +25,13 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
 };
 
 function App() {
-  const { isAuthenticated, initializeAuth, loadProducts, loadBrands } = useStore();
+  const {
+    isAuthenticated,
+    initializeAuth,
+    loadProducts,
+    loadBrands,
+    loadCategories,
+  } = useStore();
 
   // Initialize auth hook for automatic token refresh
   useAuth();
@@ -40,8 +46,9 @@ function App() {
     if (isAuthenticated) {
       loadProducts();
       loadBrands();
+      loadCategories();
     }
-  }, [isAuthenticated, loadProducts, loadBrands]);
+  }, [isAuthenticated, loadProducts, loadBrands, loadCategories]);
 
   return (
     <Router>

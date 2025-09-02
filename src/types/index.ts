@@ -63,3 +63,21 @@ export interface Category {
     location: string;
   };
 }
+
+// API Response Types
+export interface ApiResponse<T> {
+  status: string;
+  message: string;
+  metadata?: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+  data: T;
+}
+
+export interface BrandsResponse extends ApiResponse<Brand[]> {}
+export interface BrandResponse extends ApiResponse<Brand> {}
+export interface CategoriesResponse extends ApiResponse<Category[]> {}
+export interface CategoryResponse extends ApiResponse<Category> {}
