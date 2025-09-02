@@ -4,6 +4,9 @@ import { Button } from "../components/ui/Button";
 import { Modal } from "../components/ui/Modal";
 import { Layout } from "../components/Layout/Layout";
 import { useStore } from "../store/useStore";
+import { useToast } from "../hooks/useToast";
+import { ToastContainer } from "../components/ui/Toast";
+import Swal from "sweetalert2";
 
 export const Categories: React.FC = () => {
   const {
@@ -15,6 +18,7 @@ export const Categories: React.FC = () => {
     deleteCategory,
   } = useStore();
 
+  const { toast, toasts, dismissToast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<any | null>(null);
@@ -31,22 +35,42 @@ export const Categories: React.FC = () => {
   );
 
   const handleAddCategory = async () => {
-    if (newCategoryName.trim()) {
-      setIsSubmitting(true);
-      try {
-        const success = await addCategory(newCategoryName.trim());
-        if (success) {
-          setNewCategoryName("");
-          setIsAddModalOpen(false);
-        } else {
-          alert("Failed to add category");
-        }
-      } catch (error) {
-        console.error("Error adding category:", error);
-        alert("Failed to add category");
-      } finally {
-        setIsSubmitting(false);
+    if (!newCategoryName.trim()) {
+      toast({
+        title: "Error",
+        description: "Nama kategori tidak boleh kosong",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const success = await addCategory(newCategoryName.trim());
+      if (success) {
+        toast({
+          title: "Berhasil",
+          description: "Kategori berhasil ditambahkan",
+          variant: "success",
+        });
+        setNewCategoryName("");
+        setIsAddModalOpen(false);
+      } else {
+        toast({
+          title: "Error",
+          description: "Gagal menambahkan kategori",
+          variant: "destructive",
+        });
       }
+    } catch (error) {
+      console.error("Error adding category:", error);
+      toast({
+        title: "Error",
+        description: "Terjadi kesalahan saat menambahkan kategori",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -57,39 +81,88 @@ export const Categories: React.FC = () => {
   };
 
   const handleUpdateCategory = async () => {
-    if (editingCategory && newCategoryName.trim()) {
-      setIsSubmitting(true);
-      try {
-        const success = await updateCategory(
-          editingCategory.id,
-          newCategoryName.trim()
-        );
-        if (success) {
-          setNewCategoryName("");
-          setEditingCategory(null);
-          setIsAddModalOpen(false);
-        } else {
-          alert("Failed to update category");
-        }
-      } catch (error) {
-        console.error("Error updating category:", error);
-        alert("Failed to update category");
-      } finally {
-        setIsSubmitting(false);
+    if (!editingCategory || !newCategoryName.trim()) {
+      toast({
+        title: "Error",
+        description: "Nama kategori tidak boleh kosong",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const success = await updateCategory(
+        editingCategory.id,
+        newCategoryName.trim()
+      );
+      if (success) {
+        toast({
+          title: "Berhasil",
+          description: "Kategori berhasil diupdate",
+          variant: "success",
+        });
+        setNewCategoryName("");
+        setEditingCategory(null);
+        setIsAddModalOpen(false);
+      } else {
+        toast({
+          title: "Error",
+          description: "Gagal mengupdate kategori",
+          variant: "destructive",
+        });
       }
+    } catch (error) {
+      console.error("Error updating category:", error);
+      toast({
+        title: "Error",
+        description: "Terjadi kesalahan saat mengupdate kategori",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleDeleteCategory = async (id: string) => {
-    if (confirm("Apakah Anda yakin ingin menghapus kategori ini?")) {
+    const result = await Swal.fire({
+      title: "Hapus Kategori",
+      text: "Apakah Anda yakin ingin menghapus kategori ini?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Ya, Hapus!",
+      cancelButtonText: "Batal",
+      reverseButtons: true,
+    });
+
+    if (result.isConfirmed) {
       try {
         const success = await deleteCategory(id);
-        if (!success) {
-          alert("Failed to delete category");
+        if (success) {
+          await Swal.fire({
+            title: "Berhasil!",
+            text: "Kategori berhasil dihapus",
+            icon: "success",
+            confirmButtonColor: "#059669",
+          });
+        } else {
+          await Swal.fire({
+            title: "Error!",
+            text: "Gagal menghapus kategori",
+            icon: "error",
+            confirmButtonColor: "#dc2626",
+          });
         }
       } catch (error) {
         console.error("Error deleting category:", error);
-        alert("Failed to delete category");
+        await Swal.fire({
+          title: "Error!",
+          text: "Terjadi kesalahan saat menghapus kategori",
+          icon: "error",
+          confirmButtonColor: "#dc2626",
+        });
       }
     }
   };
@@ -266,6 +339,9 @@ export const Categories: React.FC = () => {
             </div>
           </div>
         </Modal>
+
+        {/* Toast Container */}
+        <ToastContainer toasts={toasts} onClose={dismissToast} />
       </div>
     </Layout>
   );

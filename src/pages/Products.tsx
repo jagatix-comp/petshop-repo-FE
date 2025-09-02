@@ -7,6 +7,7 @@ import { useStore } from "../store/useStore";
 import { formatCurrency } from "../utils/auth";
 import { useToast } from "../hooks/useToast";
 import { ToastContainer } from "../components/ui/Toast";
+import Swal from "sweetalert2";
 
 export const Products: React.FC = () => {
   const { products, deleteProduct, loadProducts, isLoadingProducts } =
@@ -39,28 +40,43 @@ export const Products: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm("Apakah Anda yakin ingin menghapus produk ini?")) {
+    const result = await Swal.fire({
+      title: "Hapus Produk",
+      text: "Apakah Anda yakin ingin menghapus produk ini?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Ya, Hapus!",
+      cancelButtonText: "Batal",
+      reverseButtons: true,
+    });
+
+    if (result.isConfirmed) {
       try {
         const success = await deleteProduct(id);
         if (success) {
-          toast({
-            title: "Berhasil",
-            description: "Produk berhasil dihapus",
-            variant: "success",
+          await Swal.fire({
+            title: "Berhasil!",
+            text: "Produk berhasil dihapus",
+            icon: "success",
+            confirmButtonColor: "#059669",
           });
         } else {
-          toast({
-            title: "Error",
-            description: "Gagal menghapus produk",
-            variant: "destructive",
+          await Swal.fire({
+            title: "Error!",
+            text: "Gagal menghapus produk",
+            icon: "error",
+            confirmButtonColor: "#dc2626",
           });
         }
       } catch (error) {
         console.error("Error deleting product:", error);
-        toast({
-          title: "Error",
-          description: "Terjadi kesalahan saat menghapus produk",
-          variant: "destructive",
+        await Swal.fire({
+          title: "Error!",
+          text: "Terjadi kesalahan saat menghapus produk",
+          icon: "error",
+          confirmButtonColor: "#dc2626",
         });
       }
     }

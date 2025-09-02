@@ -5,6 +5,9 @@ import { Modal } from "../components/ui/Modal";
 import { Layout } from "../components/Layout/Layout";
 import { useStore } from "../store/useStore";
 import { Brand } from "../types";
+import { useToast } from "../hooks/useToast";
+import { ToastContainer } from "../components/ui/Toast";
+import Swal from "sweetalert2";
 
 export const Brands: React.FC = () => {
   const {
@@ -16,6 +19,7 @@ export const Brands: React.FC = () => {
     deleteBrand,
   } = useStore();
 
+  const { toast, toasts, dismissToast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingBrand, setEditingBrand] = useState<Brand | null>(null);
@@ -32,13 +36,41 @@ export const Brands: React.FC = () => {
   );
 
   const handleAddBrand = async () => {
-    if (newBrandName.trim()) {
-      setIsSubmitting(true);
+    if (!newBrandName.trim()) {
+      toast({
+        title: "Error",
+        description: "Nama brand tidak boleh kosong",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
       const success = await addBrand(newBrandName.trim());
       if (success) {
+        toast({
+          title: "Berhasil",
+          description: "Brand berhasil ditambahkan",
+          variant: "success",
+        });
         setNewBrandName("");
         setIsAddModalOpen(false);
+      } else {
+        toast({
+          title: "Error",
+          description: "Gagal menambahkan brand",
+          variant: "destructive",
+        });
       }
+    } catch (error) {
+      console.error("Error adding brand:", error);
+      toast({
+        title: "Error",
+        description: "Terjadi kesalahan saat menambahkan brand",
+        variant: "destructive",
+      });
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -50,21 +82,86 @@ export const Brands: React.FC = () => {
   };
 
   const handleUpdateBrand = async () => {
-    if (editingBrand && newBrandName.trim()) {
-      setIsSubmitting(true);
+    if (!editingBrand || !newBrandName.trim()) {
+      toast({
+        title: "Error",
+        description: "Nama brand tidak boleh kosong",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
       const success = await updateBrand(editingBrand.id, newBrandName.trim());
       if (success) {
+        toast({
+          title: "Berhasil",
+          description: "Brand berhasil diupdate",
+          variant: "success",
+        });
         setEditingBrand(null);
         setNewBrandName("");
         setIsAddModalOpen(false);
+      } else {
+        toast({
+          title: "Error",
+          description: "Gagal mengupdate brand",
+          variant: "destructive",
+        });
       }
+    } catch (error) {
+      console.error("Error updating brand:", error);
+      toast({
+        title: "Error",
+        description: "Terjadi kesalahan saat mengupdate brand",
+        variant: "destructive",
+      });
+    } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleDeleteBrand = async (id: string) => {
-    if (confirm("Apakah Anda yakin ingin menghapus brand ini?")) {
-      await deleteBrand(id);
+    const result = await Swal.fire({
+      title: "Hapus Brand",
+      text: "Apakah Anda yakin ingin menghapus brand ini?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Ya, Hapus!",
+      cancelButtonText: "Batal",
+      reverseButtons: true,
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const success = await deleteBrand(id);
+        if (success) {
+          await Swal.fire({
+            title: "Berhasil!",
+            text: "Brand berhasil dihapus",
+            icon: "success",
+            confirmButtonColor: "#059669",
+          });
+        } else {
+          await Swal.fire({
+            title: "Error!",
+            text: "Gagal menghapus brand",
+            icon: "error",
+            confirmButtonColor: "#dc2626",
+          });
+        }
+      } catch (error) {
+        console.error("Error deleting brand:", error);
+        await Swal.fire({
+          title: "Error!",
+          text: "Terjadi kesalahan saat menghapus brand",
+          icon: "error",
+          confirmButtonColor: "#dc2626",
+        });
+      }
     }
   };
 
@@ -224,6 +321,9 @@ export const Brands: React.FC = () => {
             </div>
           </div>
         </Modal>
+
+        {/* Toast Container */}
+        <ToastContainer toasts={toasts} onClose={dismissToast} />
       </div>
     </Layout>
   );
