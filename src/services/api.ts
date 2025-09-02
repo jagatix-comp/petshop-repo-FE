@@ -42,12 +42,27 @@ class ApiService {
     options: RequestInit = {}
   ): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
+
+    console.log("🌐 API Request:", {
+      method: options.method || "GET",
+      url,
+      endpoint,
+      headers: options.headers || this.getAuthHeaders(),
+    });
+
     const config: RequestInit = {
       headers: this.getAuthHeaders(),
       ...options,
     };
 
     const response = await fetch(url, config);
+
+    console.log("📡 API Response:", {
+      status: response.status,
+      statusText: response.statusText,
+      ok: response.ok,
+      url,
+    });
 
     if (!response.ok) {
       if (
@@ -82,6 +97,20 @@ class ApiService {
         localStorage.removeItem(STORAGE_KEYS.USER);
         window.location.href = "/login";
       }
+
+      // Log error details
+      try {
+        const errorText = await response.text();
+        console.error("❌ API Error Details:", {
+          status: response.status,
+          statusText: response.statusText,
+          url,
+          errorBody: errorText,
+        });
+      } catch (e) {
+        console.error("❌ Could not read error response body");
+      }
+
       throw new Error(`API Error: ${response.statusText}`);
     }
 
@@ -134,7 +163,15 @@ class ApiService {
     if (params?.page) query.append("page", params.page.toString());
     if (params?.limit) query.append("limit", params.limit.toString());
 
-    return this.request<ProductsResponse>(`/products?${query}`);
+    const queryString = query.toString();
+    const endpoint = queryString
+      ? `${API_ENDPOINTS.PRODUCTS.LIST}?${queryString}`
+      : API_ENDPOINTS.PRODUCTS.LIST;
+
+    console.log("📡 API: Getting products with endpoint:", endpoint);
+    console.log("📡 API: Query params:", params);
+
+    return this.request<ProductsResponse>(endpoint);
   }
 
   async createProduct(
@@ -185,11 +222,16 @@ class ApiService {
     if (params?.page) query.append("page", params.page.toString());
     if (params?.limit) query.append("limit", params.limit.toString());
 
-    return this.request<BrandsResponse>(`/brands?${query}`);
+    const queryString = query.toString();
+    const endpoint = queryString
+      ? `${API_ENDPOINTS.BRANDS.LIST}?${queryString}`
+      : API_ENDPOINTS.BRANDS.LIST;
+
+    return this.request<BrandsResponse>(endpoint);
   }
 
   async createBrand(data: { name: string }): Promise<BrandResponse> {
-    return this.request<BrandResponse>("/brands", {
+    return this.request<BrandResponse>(API_ENDPOINTS.BRANDS.CREATE, {
       method: "POST",
       body: JSON.stringify(data),
     });
@@ -199,14 +241,14 @@ class ApiService {
     id: string,
     data: { name: string }
   ): Promise<BrandResponse> {
-    return this.request<BrandResponse>(`/brands/${id}`, {
+    return this.request<BrandResponse>(API_ENDPOINTS.BRANDS.UPDATE(id), {
       method: "PUT",
       body: JSON.stringify(data),
     });
   }
 
   async deleteBrand(id: string): Promise<BrandResponse> {
-    return this.request<BrandResponse>(`/brands/${id}`, {
+    return this.request<BrandResponse>(API_ENDPOINTS.BRANDS.DELETE(id), {
       method: "DELETE",
     });
   }
@@ -222,11 +264,16 @@ class ApiService {
     if (params?.page) query.append("page", params.page.toString());
     if (params?.limit) query.append("limit", params.limit.toString());
 
-    return this.request<CategoriesResponse>(`/categories?${query}`);
+    const queryString = query.toString();
+    const endpoint = queryString
+      ? `${API_ENDPOINTS.CATEGORIES.LIST}?${queryString}`
+      : API_ENDPOINTS.CATEGORIES.LIST;
+
+    return this.request<CategoriesResponse>(endpoint);
   }
 
   async createCategory(data: { name: string }): Promise<CategoryResponse> {
-    return this.request<CategoryResponse>("/categories", {
+    return this.request<CategoryResponse>(API_ENDPOINTS.CATEGORIES.CREATE, {
       method: "POST",
       body: JSON.stringify(data),
     });
@@ -236,14 +283,14 @@ class ApiService {
     id: string,
     data: { name: string }
   ): Promise<CategoryResponse> {
-    return this.request<CategoryResponse>(`/categories/${id}`, {
+    return this.request<CategoryResponse>(API_ENDPOINTS.CATEGORIES.UPDATE(id), {
       method: "PUT",
       body: JSON.stringify(data),
     });
   }
 
   async deleteCategory(id: string): Promise<CategoryResponse> {
-    return this.request<CategoryResponse>(`/categories/${id}`, {
+    return this.request<CategoryResponse>(API_ENDPOINTS.CATEGORIES.DELETE(id), {
       method: "DELETE",
     });
   }

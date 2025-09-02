@@ -86,16 +86,23 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
       categoryID: formData.categoryID,
     };
 
+    console.log("🎯 Modal: Submitting product data:", productData);
+
     try {
       let success = false;
 
       if (editingProduct) {
+        console.log("✏️ Modal: Updating product:", editingProduct.id);
         success = await updateProduct(editingProduct.id, productData);
       } else {
+        console.log("➕ Modal: Adding new product");
         success = await addProduct(productData);
       }
 
+      console.log("📊 Modal: Operation result:", success);
+
       if (success) {
+        console.log("✅ Modal: Product saved successfully, closing modal");
         onClose();
         setFormData({
           name: "",
@@ -105,6 +112,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
           categoryID: "",
         });
       } else {
+        console.log("❌ Modal: Failed to save product");
         alert("Gagal menyimpan produk!");
       }
     } catch (error) {

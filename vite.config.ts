@@ -18,7 +18,7 @@ export default defineConfig(({ command, mode }) => {
     },
     server: {
       port: 5173,
-      host: true,
+      host: "localhost",
       // Proxy for development to avoid CORS issues
       proxy:
         mode === "development"

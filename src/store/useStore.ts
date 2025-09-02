@@ -150,29 +150,51 @@ export const useStore = create<StoreState>((set, get) => ({
   isLoadingProducts: false,
   loadProducts: async (params) => {
     try {
+      console.log("🔄 Store: Loading products with params:", params);
       set({ isLoadingProducts: true });
       const response = await apiService.getProducts(params);
+      console.log("📦 Store: Get products response:", response);
+
       if (response.status === "success") {
+        console.log(
+          "✅ Store: Products loaded successfully, count:",
+          response.data?.length || 0
+        );
         set({ products: response.data || [], isLoadingProducts: false });
       } else {
+        console.log(
+          "❌ Store: Failed to load products, response status:",
+          response.status
+        );
         set({ products: [], isLoadingProducts: false });
       }
     } catch (error) {
-      console.error("Failed to load products:", error);
+      console.error("❌ Store: Failed to load products:", error);
       set({ products: [], isLoadingProducts: false });
     }
   },
   addProduct: async (productData) => {
     try {
+      console.log("🚀 Store: Adding product with data:", productData);
       const response = await apiService.createProduct(productData);
+      console.log("📦 Store: Create product response:", response);
+
       if (response.status === "success") {
+        console.log(
+          "✅ Store: Product created successfully, reloading products..."
+        );
         // Reload products after successful creation
         await get().loadProducts();
+        console.log("🔄 Store: Products reloaded");
         return true;
       }
+      console.log(
+        "❌ Store: Product creation failed, response status:",
+        response.status
+      );
       return false;
     } catch (error) {
-      console.error("Failed to add product:", error);
+      console.error("❌ Store: Failed to add product:", error);
       return false;
     }
   },
