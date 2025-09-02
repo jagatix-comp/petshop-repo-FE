@@ -7,6 +7,7 @@ export const ROUTES = {
   CATEGORIES: "/categories",
   CASHIER: "/cashier",
   REPORTS: "/reports",
+  PROFILE: "/profile",
 } as const;
 
 // API Endpoints

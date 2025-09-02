@@ -5,6 +5,8 @@ import { Button } from "../components/ui/Button";
 import { AddProductModal } from "../components/Products/AddProductModal";
 import { useStore } from "../store/useStore";
 import { formatCurrency } from "../utils/auth";
+import { useToast } from "../hooks/useToast";
+import { ToastContainer } from "../components/ui/Toast";
 
 export const Products: React.FC = () => {
   const { products, deleteProduct, loadProducts, isLoadingProducts } =
@@ -12,6 +14,7 @@ export const Products: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const { toast, toasts, dismissToast } = useToast();
 
   useEffect(() => {
     loadProducts();
@@ -39,12 +42,26 @@ export const Products: React.FC = () => {
     if (window.confirm("Apakah Anda yakin ingin menghapus produk ini?")) {
       try {
         const success = await deleteProduct(id);
-        if (!success) {
-          alert("Gagal menghapus produk!");
+        if (success) {
+          toast({
+            title: "Berhasil",
+            description: "Produk berhasil dihapus",
+            variant: "success",
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: "Gagal menghapus produk",
+            variant: "destructive",
+          });
         }
       } catch (error) {
         console.error("Error deleting product:", error);
-        alert("Terjadi kesalahan saat menghapus produk!");
+        toast({
+          title: "Error",
+          description: "Terjadi kesalahan saat menghapus produk",
+          variant: "destructive",
+        });
       }
     }
   };
@@ -171,6 +188,9 @@ export const Products: React.FC = () => {
           onClose={() => setIsModalOpen(false)}
           editingProduct={editingProduct}
         />
+
+        {/* Toast Container */}
+        <ToastContainer toasts={toasts} onClose={dismissToast} />
       </div>
     </Layout>
   );

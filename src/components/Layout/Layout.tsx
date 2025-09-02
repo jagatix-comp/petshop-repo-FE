@@ -1,5 +1,5 @@
-import React from 'react';
-import { Sidebar } from './Sidebar';
+import React from "react";
+import { Sidebar } from "./Sidebar";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -8,10 +8,10 @@ interface LayoutProps {
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <Sidebar />
-      <main className="flex-1 overflow-auto">
-        {children}
-      </main>
+      <div className="fixed left-0 top-0 h-full z-30">
+        <Sidebar />
+      </div>
+      <main className="flex-1 ml-64 overflow-auto">{children}</main>
     </div>
   );
 };

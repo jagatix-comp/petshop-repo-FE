@@ -3,6 +3,8 @@ import { Modal } from "../ui/Modal";
 import { Button } from "../ui/Button";
 import { useStore } from "../../store/useStore";
 import { Product } from "../../types";
+import { useToast } from "../../hooks/useToast";
+import { ToastContainer } from "../ui/Toast";
 
 interface AddProductModalProps {
   isOpen: boolean;
@@ -24,6 +26,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
     loadCategories,
   } = useStore();
 
+  const { toast, toasts, dismissToast } = useToast();
   const [formData, setFormData] = useState({
     name: "",
     price: "",
@@ -72,7 +75,11 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
       !formData.brandID ||
       !formData.categoryID
     ) {
-      alert("Mohon lengkapi semua field!");
+      toast({
+        title: "Error",
+        description: "Mohon lengkapi semua field!",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -103,6 +110,13 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
 
       if (success) {
         console.log("✅ Modal: Product saved successfully, closing modal");
+        toast({
+          title: "Berhasil",
+          description: editingProduct
+            ? "Produk berhasil diupdate"
+            : "Produk berhasil ditambahkan",
+          variant: "success",
+        });
         onClose();
         setFormData({
           name: "",
@@ -113,11 +127,19 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
         });
       } else {
         console.log("❌ Modal: Failed to save product");
-        alert("Gagal menyimpan produk!");
+        toast({
+          title: "Error",
+          description: "Gagal menyimpan produk!",
+          variant: "destructive",
+        });
       }
     } catch (error) {
       console.error("Error saving product:", error);
-      alert("Terjadi kesalahan saat menyimpan produk!");
+      toast({
+        title: "Error",
+        description: "Terjadi kesalahan saat menyimpan produk!",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -270,6 +292,9 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
           </Button>
         </div>
       </form>
+
+      {/* Toast Container */}
+      <ToastContainer toasts={toasts} onClose={dismissToast} />
     </Modal>
   );
 };

@@ -12,6 +12,9 @@ import { Brands } from "./pages/Brands";
 import { Categories } from "./pages/Categories";
 import { Cashier } from "./pages/Cashier";
 import { Reports } from "./pages/Reports";
+import { Profile } from "./pages/Profile";
+import ProfileSimple from "./pages/ProfileSimple";
+import ProfileTest from "./pages/ProfileTest";
 import { useStore } from "./store/useStore";
 import { useAuth } from "./hooks/useAuth";
 import { ROUTES } from "./constants";
@@ -102,6 +105,15 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path={ROUTES.PROFILE}
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
+
         <Route
           path="/"
           element={

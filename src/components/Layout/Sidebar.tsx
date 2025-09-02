@@ -11,6 +11,7 @@ import {
   ChevronRight,
   Tag,
   Bookmark,
+  User,
 } from "lucide-react";
 import { useStore } from "../../store/useStore";
 import { ROUTES } from "../../constants";
@@ -47,6 +48,7 @@ export const Sidebar: React.FC = () => {
     },
     { path: ROUTES.CASHIER, icon: ShoppingCart, label: "Kasir" },
     { path: ROUTES.REPORTS, icon: FileText, label: "Laporan" },
+    { path: ROUTES.PROFILE, icon: User, label: "Profile" },
   ];
 
   return (
