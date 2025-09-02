@@ -5,6 +5,10 @@ import type {
   BrandResponse,
   CategoriesResponse,
   CategoryResponse,
+  ProductsResponse,
+  ProductResponse,
+  CreateProductRequest,
+  UpdateProductRequest,
 } from "../types";
 
 interface LoginResponse {
@@ -21,40 +25,6 @@ interface RefreshTokenResponse {
   data: {
     accessToken: string;
   };
-}
-
-interface Product {
-  id: string;
-  name: string;
-  stock: number;
-  price: number;
-  created_at: string;
-  updated_at: string;
-  brand: {
-    id: string;
-    name: string;
-  };
-  category: {
-    id: string;
-    name: string;
-  };
-  tenant: {
-    id: string;
-    name: string;
-    location: string;
-  };
-}
-
-interface ProductsResponse {
-  status: string;
-  message: string;
-  metadata: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-  data: Product[];
 }
 
 class ApiService {
@@ -167,35 +137,35 @@ class ApiService {
     return this.request<ProductsResponse>(`/products?${query}`);
   }
 
-  async createProduct(product: {
-    name: string;
-    price: number;
-    stock: number;
-    category: string;
-  }) {
-    return this.request<{ product: any }>("/products", {
+  async createProduct(
+    productData: CreateProductRequest
+  ): Promise<ProductResponse> {
+    console.log("🚀 Creating product:", productData);
+
+    return this.request<ProductResponse>(API_ENDPOINTS.PRODUCTS.CREATE, {
       method: "POST",
-      body: JSON.stringify(product),
+      body: JSON.stringify(productData),
     });
   }
 
   async updateProduct(
     id: string,
-    product: Partial<{
-      name: string;
-      price: number;
-      stock: number;
-      category: string;
-    }>
-  ) {
-    return this.request<{ product: any }>(`/products/${id}`, {
+    productData: UpdateProductRequest
+  ): Promise<ProductResponse> {
+    console.log("🔄 Updating product:", { id, productData });
+
+    return this.request<ProductResponse>(API_ENDPOINTS.PRODUCTS.UPDATE(id), {
       method: "PUT",
-      body: JSON.stringify(product),
+      body: JSON.stringify(productData),
     });
   }
 
-  async deleteProduct(id: string) {
-    return this.request(`/products/${id}`, { method: "DELETE" });
+  async deleteProduct(id: string): Promise<ProductResponse> {
+    console.log("🗑️ Deleting product:", id);
+
+    return this.request<ProductResponse>(API_ENDPOINTS.PRODUCTS.DELETE(id), {
+      method: "DELETE",
+    });
   }
 
   async getLowStockProducts(threshold = 10) {

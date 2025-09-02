@@ -1,63 +1,135 @@
-import React, { useState } from 'react';
-import { Modal } from '../ui/Modal';
-import { Button } from '../ui/Button';
-import { useStore } from '../../store/useStore';
+import React, { useState, useEffect } from "react";
+import { Modal } from "../ui/Modal";
+import { Button } from "../ui/Button";
+import { useStore } from "../../store/useStore";
+import { Product } from "../../types";
 
 interface AddProductModalProps {
   isOpen: boolean;
   onClose: () => void;
-  editingProduct?: any;
+  editingProduct?: Product | null;
 }
 
-export const AddProductModal: React.FC<AddProductModalProps> = ({ 
-  isOpen, 
+export const AddProductModal: React.FC<AddProductModalProps> = ({
+  isOpen,
   onClose,
-  editingProduct 
+  editingProduct,
 }) => {
-  const { addProduct, updateProduct } = useStore();
+  const {
+    addProduct,
+    updateProduct,
+    brands,
+    categories,
+    loadBrands,
+    loadCategories,
+  } = useStore();
+
   const [formData, setFormData] = useState({
-    name: editingProduct?.name || '',
-    price: editingProduct?.price || '',
-    stock: editingProduct?.stock || '',
-    category: editingProduct?.category || ''
+    name: "",
+    price: "",
+    stock: "",
+    brandID: "",
+    categoryID: "",
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    const productData = {
-      name: formData.name,
-      price: Number(formData.price),
-      stock: Number(formData.stock),
-      category: formData.category
-    };
+  // Load brands and categories when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      loadBrands();
+      loadCategories();
+    }
+  }, [isOpen, loadBrands, loadCategories]);
 
+  // Set form data when editing
+  useEffect(() => {
     if (editingProduct) {
-      updateProduct(editingProduct.id, productData);
+      setFormData({
+        name: editingProduct.name || "",
+        price: editingProduct.price?.toString() || "",
+        stock: editingProduct.stock?.toString() || "",
+        brandID: editingProduct.brand?.id || "",
+        categoryID: editingProduct.category?.id || "",
+      });
     } else {
-      addProduct(productData);
+      setFormData({
+        name: "",
+        price: "",
+        stock: "",
+        brandID: "",
+        categoryID: "",
+      });
+    }
+  }, [editingProduct]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (
+      !formData.name.trim() ||
+      !formData.price ||
+      !formData.stock ||
+      !formData.brandID ||
+      !formData.categoryID
+    ) {
+      alert("Mohon lengkapi semua field!");
+      return;
     }
 
-    setFormData({ name: '', price: '', stock: '', category: '' });
-    onClose();
+    setIsSubmitting(true);
+
+    const productData = {
+      name: formData.name.trim(),
+      price: parseInt(formData.price),
+      stock: parseInt(formData.stock),
+      brandID: formData.brandID,
+      categoryID: formData.categoryID,
+    };
+
+    try {
+      let success = false;
+
+      if (editingProduct) {
+        success = await updateProduct(editingProduct.id, productData);
+      } else {
+        success = await addProduct(productData);
+      }
+
+      if (success) {
+        onClose();
+        setFormData({
+          name: "",
+          price: "",
+          stock: "",
+          brandID: "",
+          categoryID: "",
+        });
+      } else {
+        alert("Gagal menyimpan produk!");
+      }
+    } catch (error) {
+      console.error("Error saving product:", error);
+      alert("Terjadi kesalahan saat menyimpan produk!");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const categories = [
-    'Makanan Kucing',
-    'Makanan Anjing',
-    'Perawatan Kucing',
-    'Perawatan Anjing',
-    'Aksesoris Burung',
-    'Aksesoris Ikan',
-    'Obat-obatan',
-    'Lainnya'
-  ];
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
   return (
-    <Modal 
-      isOpen={isOpen} 
-      onClose={onClose} 
-      title={editingProduct ? 'Edit Produk' : 'Tambah Produk'}
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={editingProduct ? "Edit Produk" : "Tambah Produk"}
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
@@ -66,8 +138,9 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
           </label>
           <input
             type="text"
+            name="name"
             value={formData.name}
-            onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+            onChange={handleChange}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
             required
           />
@@ -75,17 +148,40 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
+            Brand
+          </label>
+          <select
+            name="brandID"
+            value={formData.brandID}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+            required
+          >
+            <option value="">Pilih Brand</option>
+            {brands.map((brand) => (
+              <option key={brand.id} value={brand.id}>
+                {brand.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
             Kategori
           </label>
           <select
-            value={formData.category}
-            onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+            name="categoryID"
+            value={formData.categoryID}
+            onChange={handleChange}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
             required
           >
             <option value="">Pilih Kategori</option>
-            {categories.map(category => (
-              <option key={category} value={category}>{category}</option>
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
             ))}
           </select>
         </div>
@@ -97,8 +193,9 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
             </label>
             <input
               type="number"
+              name="price"
               value={formData.price}
-              onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
+              onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
               min="0"
               required
@@ -111,8 +208,9 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
             </label>
             <input
               type="number"
+              name="stock"
               value={formData.stock}
-              onChange={(e) => setFormData(prev => ({ ...prev, stock: e.target.value }))}
+              onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
               min="0"
               required
@@ -121,11 +219,15 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
         </div>
 
         <div className="flex justify-end space-x-3 pt-4">
-          <Button variant="secondary" onClick={onClose}>
+          <Button variant="secondary" onClick={onClose} disabled={isSubmitting}>
             Batal
           </Button>
-          <Button type="submit">
-            {editingProduct ? 'Update' : 'Simpan'}
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting
+              ? "Menyimpan..."
+              : editingProduct
+              ? "Update"
+              : "Simpan"}
           </Button>
         </div>
       </form>

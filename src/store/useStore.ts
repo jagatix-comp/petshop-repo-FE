@@ -6,6 +6,8 @@ import {
   User,
   Brand,
   Category,
+  CreateProductRequest,
+  UpdateProductRequest,
 } from "../types";
 import { apiService } from "../services/api";
 import { STORAGE_KEYS } from "../constants";
@@ -28,20 +30,10 @@ interface StoreState {
     page?: number;
     limit?: number;
   }) => Promise<void>;
-  addProduct: (product: {
-    name: string;
-    price: number;
-    stock: number;
-    category: string;
-  }) => Promise<boolean>;
+  addProduct: (productData: CreateProductRequest) => Promise<boolean>;
   updateProduct: (
     id: string,
-    product: Partial<{
-      name: string;
-      price: number;
-      stock: number;
-      category: string;
-    }>
+    productData: UpdateProductRequest
   ) => Promise<boolean>;
   deleteProduct: (id: string) => Promise<boolean>;
 
@@ -170,11 +162,11 @@ export const useStore = create<StoreState>((set, get) => ({
       set({ isLoadingProducts: false });
     }
   },
-  addProduct: async (product) => {
+  addProduct: async (productData) => {
     try {
-      const response = await apiService.createProduct(product);
-      if (response && response.product) {
-        // Reload products after adding
+      const response = await apiService.createProduct(productData);
+      if (response.status === "success") {
+        // Reload products after successful creation
         await get().loadProducts();
         return true;
       }
@@ -184,11 +176,11 @@ export const useStore = create<StoreState>((set, get) => ({
       return false;
     }
   },
-  updateProduct: async (id, updatedProduct) => {
+  updateProduct: async (id, productData) => {
     try {
-      const response = await apiService.updateProduct(id, updatedProduct);
-      if (response && response.product) {
-        // Reload products after updating
+      const response = await apiService.updateProduct(id, productData);
+      if (response.status === "success") {
+        // Reload products after successful update
         await get().loadProducts();
         return true;
       }
@@ -200,10 +192,15 @@ export const useStore = create<StoreState>((set, get) => ({
   },
   deleteProduct: async (id) => {
     try {
-      await apiService.deleteProduct(id);
-      // Reload products after deleting
-      await get().loadProducts();
-      return true;
+      const response = await apiService.deleteProduct(id);
+      if (response.status === "success") {
+        // Remove product from local state
+        const currentProducts = get().products;
+        const updatedProducts = currentProducts.filter((p) => p.id !== id);
+        set({ products: updatedProducts });
+        return true;
+      }
+      return false;
     } catch (error) {
       console.error("Failed to delete product:", error);
       return false;

@@ -81,3 +81,28 @@ export interface BrandsResponse extends ApiResponse<Brand[]> {}
 export interface BrandResponse extends ApiResponse<Brand> {}
 export interface CategoriesResponse extends ApiResponse<Category[]> {}
 export interface CategoryResponse extends ApiResponse<Category> {}
+
+// Product operation types
+export interface CreateProductRequest {
+  name: string;
+  stock: number;
+  price: number;
+  brandID: string;
+  categoryID: string;
+}
+
+export interface UpdateProductRequest {
+  name?: string;
+  stock?: number;
+  price?: number;
+  brandID?: string;
+  categoryID?: string;
+}
+
+export interface ProductResponse {
+  status: string;
+  message: string;
+  data?: Product;
+}
+
+export interface ProductsResponse extends ApiResponse<Product[]> {}
