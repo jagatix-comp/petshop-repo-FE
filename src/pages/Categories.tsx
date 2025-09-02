@@ -183,9 +183,11 @@ export const Categories: React.FC = () => {
 
   return (
     <Layout>
-      <div className="p-6">
+      <div className="p-8">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Categories</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Manajemen Kategori
+          </h1>
           <Button
             onClick={() => setIsAddModalOpen(true)}
             className="flex items-center gap-2"
