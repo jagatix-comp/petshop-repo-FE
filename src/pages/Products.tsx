@@ -20,7 +20,9 @@ export const Products: React.FC = () => {
   const filteredProducts = products.filter(
     (product) =>
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (product.category?.name || '').toLowerCase().includes(searchTerm.toLowerCase())
+      (product.category?.name || "")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase())
   );
 
   const handleEdit = (product: any) => {
@@ -123,7 +125,7 @@ export const Products: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-teal-100 text-teal-800">
-                          {product.category?.name || 'Tidak ada kategori'}
+                          {product.category?.name || "Tidak ada kategori"}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">

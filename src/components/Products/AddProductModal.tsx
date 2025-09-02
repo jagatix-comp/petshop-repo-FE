@@ -244,13 +244,13 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
           <Button variant="secondary" onClick={onClose} disabled={isSubmitting}>
             Batal
           </Button>
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             disabled={
-              isSubmitting || 
-              !brands || 
-              brands.length === 0 || 
-              !categories || 
+              isSubmitting ||
+              !brands ||
+              brands.length === 0 ||
+              !categories ||
               categories.length === 0
             }
           >

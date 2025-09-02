@@ -132,7 +132,9 @@ export const Brands: React.FC = () => {
                 <tr>
                   <td colSpan={4} className="px-6 py-12 text-center">
                     <div className="text-gray-500">
-                      {searchTerm ? 'Tidak ada brand yang ditemukan' : 'Belum ada brand. Silakan tambah brand baru.'}
+                      {searchTerm
+                        ? "Tidak ada brand yang ditemukan"
+                        : "Belum ada brand. Silakan tambah brand baru."}
                     </div>
                   </td>
                 </tr>
