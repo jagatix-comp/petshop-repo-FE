@@ -158,12 +158,23 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
             required
           >
             <option value="">Pilih Brand</option>
-            {brands.map((brand) => (
-              <option key={brand.id} value={brand.id}>
-                {brand.name}
+            {brands && brands.length > 0 ? (
+              brands.map((brand) => (
+                <option key={brand.id} value={brand.id}>
+                  {brand.name}
+                </option>
+              ))
+            ) : (
+              <option value="" disabled>
+                Tidak ada brand tersedia
               </option>
-            ))}
+            )}
           </select>
+          {brands && brands.length === 0 && (
+            <p className="text-sm text-red-600 mt-1">
+              Silakan tambah brand terlebih dahulu di menu Brand
+            </p>
+          )}
         </div>
 
         <div>
@@ -178,12 +189,23 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
             required
           >
             <option value="">Pilih Kategori</option>
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
+            {categories && categories.length > 0 ? (
+              categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))
+            ) : (
+              <option value="" disabled>
+                Tidak ada kategori tersedia
               </option>
-            ))}
+            )}
           </select>
+          {categories && categories.length === 0 && (
+            <p className="text-sm text-red-600 mt-1">
+              Silakan tambah kategori terlebih dahulu di menu Kategori
+            </p>
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -222,7 +244,16 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
           <Button variant="secondary" onClick={onClose} disabled={isSubmitting}>
             Batal
           </Button>
-          <Button type="submit" disabled={isSubmitting}>
+          <Button 
+            type="submit" 
+            disabled={
+              isSubmitting || 
+              !brands || 
+              brands.length === 0 || 
+              !categories || 
+              categories.length === 0
+            }
+          >
             {isSubmitting
               ? "Menyimpan..."
               : editingProduct

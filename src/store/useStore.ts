@@ -153,13 +153,13 @@ export const useStore = create<StoreState>((set, get) => ({
       set({ isLoadingProducts: true });
       const response = await apiService.getProducts(params);
       if (response.status === "success") {
-        set({ products: response.data, isLoadingProducts: false });
+        set({ products: response.data || [], isLoadingProducts: false });
       } else {
-        set({ isLoadingProducts: false });
+        set({ products: [], isLoadingProducts: false });
       }
     } catch (error) {
       console.error("Failed to load products:", error);
-      set({ isLoadingProducts: false });
+      set({ products: [], isLoadingProducts: false });
     }
   },
   addProduct: async (productData) => {
@@ -215,13 +215,13 @@ export const useStore = create<StoreState>((set, get) => ({
       set({ isLoadingBrands: true });
       const response = await apiService.getBrands(params);
       if (response.status === "success") {
-        set({ brands: response.data, isLoadingBrands: false });
+        set({ brands: response.data || [], isLoadingBrands: false });
       } else {
-        set({ isLoadingBrands: false });
+        set({ brands: [], isLoadingBrands: false });
       }
     } catch (error) {
       console.error("Failed to load brands:", error);
-      set({ isLoadingBrands: false });
+      set({ brands: [], isLoadingBrands: false });
     }
   },
   addBrand: async (name) => {
@@ -275,13 +275,13 @@ export const useStore = create<StoreState>((set, get) => ({
       set({ isLoadingCategories: true });
       const response = await apiService.getCategories(params);
       if (response.status === "success") {
-        set({ categories: response.data, isLoadingCategories: false });
+        set({ categories: response.data || [], isLoadingCategories: false });
       } else {
-        set({ isLoadingCategories: false });
+        set({ categories: [], isLoadingCategories: false });
       }
     } catch (error) {
       console.error("Failed to load categories:", error);
-      set({ isLoadingCategories: false });
+      set({ categories: [], isLoadingCategories: false });
     }
   },
   addCategory: async (name) => {
