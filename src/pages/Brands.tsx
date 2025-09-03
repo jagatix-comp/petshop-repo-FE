@@ -45,6 +45,20 @@ export const Brands: React.FC = () => {
       return;
     }
 
+    // Check if brand already exists
+    const existingBrand = brands.find(
+      (brand) => brand.name.toLowerCase() === newBrandName.trim().toLowerCase()
+    );
+
+    if (existingBrand) {
+      toast({
+        title: "Error",
+        description: "Brand dengan nama tersebut sudah ada",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const success = await addBrand(newBrandName.trim());
@@ -86,6 +100,22 @@ export const Brands: React.FC = () => {
       toast({
         title: "Error",
         description: "Nama brand tidak boleh kosong",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check if brand name already exists (excluding current brand)
+    const existingBrand = brands.find(
+      (brand) =>
+        brand.id !== editingBrand.id &&
+        brand.name.toLowerCase() === newBrandName.trim().toLowerCase()
+    );
+
+    if (existingBrand) {
+      toast({
+        title: "Error",
+        description: "Brand dengan nama tersebut sudah ada",
         variant: "destructive",
       });
       return;

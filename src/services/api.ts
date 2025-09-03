@@ -150,7 +150,7 @@ class ApiService {
               STORAGE_KEYS.ACCESS_TOKEN,
               refreshResponse.data.accessToken
             );
-            
+
             // Retry the original request with new token
             const retryConfig: RequestInit = {
               ...config,
@@ -220,9 +220,12 @@ class ApiService {
   async refreshToken(): Promise<RefreshTokenResponse> {
     console.log("🔄 Attempting to refresh token...");
     try {
-      const response = await this.request<RefreshTokenResponse>(API_ENDPOINTS.AUTH.REFRESH, {
-        method: "POST",
-      });
+      const response = await this.request<RefreshTokenResponse>(
+        API_ENDPOINTS.AUTH.REFRESH,
+        {
+          method: "POST",
+        }
+      );
       console.log("✅ Refresh token response:", response.status);
       return response;
     } catch (error) {

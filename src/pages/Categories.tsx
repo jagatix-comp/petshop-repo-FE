@@ -44,6 +44,20 @@ export const Categories: React.FC = () => {
       return;
     }
 
+    // Check if category already exists
+    const existingCategory = categories.find(
+      (category) => category.name.toLowerCase() === newCategoryName.trim().toLowerCase()
+    );
+
+    if (existingCategory) {
+      toast({
+        title: "Error",
+        description: "Kategori dengan nama tersebut sudah ada",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const success = await addCategory(newCategoryName.trim());
@@ -85,6 +99,22 @@ export const Categories: React.FC = () => {
       toast({
         title: "Error",
         description: "Nama kategori tidak boleh kosong",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check if category name already exists (excluding current category)
+    const existingCategory = categories.find(
+      (category) => 
+        category.id !== editingCategory.id && 
+        category.name.toLowerCase() === newCategoryName.trim().toLowerCase()
+    );
+
+    if (existingCategory) {
+      toast({
+        title: "Error",
+        description: "Kategori dengan nama tersebut sudah ada",
         variant: "destructive",
       });
       return;
