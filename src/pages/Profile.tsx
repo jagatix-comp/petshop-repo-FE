@@ -121,6 +121,16 @@ export const Profile: React.FC = () => {
       return;
     }
 
+    // Validasi huruf kapital
+    if (!/[A-Z]/.test(passwordData.newPassword)) {
+      toast({
+        title: "Error",
+        description: "Password harus mengandung minimal satu huruf kapital",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
     try {
       const success = await changePassword({
@@ -396,6 +406,9 @@ export const Profile: React.FC = () => {
                           )}
                         </button>
                       </div>
+                      <p className="text-xs text-gray-500">
+                        Password minimal 6 karakter dan mengandung minimal satu huruf kapital
+                      </p>
                     </div>
 
                     <div className="space-y-2">
