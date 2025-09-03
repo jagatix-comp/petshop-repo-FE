@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { User, Lock, Mail, Building, Save } from "lucide-react";
+import { User, Lock, Building, Save } from "lucide-react";
 import { Layout } from "../components/Layout/Layout";
 import { Button } from "../components/ui/Button";
 import {
@@ -11,13 +11,6 @@ import {
 } from "../components/ui/Card";
 import { Input } from "../components/ui/Input";
 import { Label } from "../components/ui/Label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../components/ui/Select";
 import { Separator } from "../components/ui/Separator";
 import { Badge } from "../components/ui/Badge";
 import { useStore } from "../store/useStore";
@@ -25,14 +18,18 @@ import { useToast } from "../hooks/useToast";
 import { ToastContainer } from "../components/ui/Toast";
 
 export const Profile: React.FC = () => {
-  const { user: currentUser, loadProfile, updateProfile, changePassword } = useStore();
+  const {
+    user: currentUser,
+    loadProfile,
+    updateProfile,
+    changePassword,
+  } = useStore();
   const [loading, setLoading] = useState(false);
   const [profileData, setProfileData] = useState({
     name: "",
     username: "",
-    email: "",
     phoneNumber: "",
-    branch: "",
+    branch: "", // Only for display, not editable
   });
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
@@ -40,8 +37,6 @@ export const Profile: React.FC = () => {
     confirmPassword: "",
   });
   const { toast, toasts, dismissToast } = useToast();
-
-  const branches = ["Main Store", "Branch A", "Branch B"];
 
   useEffect(() => {
     const initializeProfile = async () => {
@@ -56,7 +51,6 @@ export const Profile: React.FC = () => {
       setProfileData({
         name: currentUser.name || "",
         username: currentUser.username || currentUser.email || "",
-        email: currentUser.email || "",
         phoneNumber: currentUser.phoneNumber || "",
         branch: currentUser.tenant?.name || "Main Store",
       });
@@ -236,29 +230,14 @@ export const Profile: React.FC = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                      <Input
-                        id="email"
-                        type="email"
-                        value={profileData.email}
-                        onChange={(e) => handleChange("email")(e.target.value)}
-                        placeholder="Masukkan email"
-                        className="pl-10"
-                        required
-                        disabled
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
                     <Label htmlFor="phoneNumber">Nomor Telepon</Label>
                     <Input
                       id="phoneNumber"
                       type="tel"
                       value={profileData.phoneNumber}
-                      onChange={(e) => handleChange("phoneNumber")(e.target.value)}
+                      onChange={(e) =>
+                        handleChange("phoneNumber")(e.target.value)
+                      }
                       placeholder="Masukkan nomor telepon"
                       required
                     />
@@ -268,21 +247,14 @@ export const Profile: React.FC = () => {
                     <Label htmlFor="branch">Cabang</Label>
                     <div className="relative">
                       <Building className="absolute left-3 top-3 h-4 w-4 text-gray-400 z-10" />
-                      <Select
+                      <Input
+                        id="branch"
                         value={profileData.branch}
-                        onValueChange={handleChange("branch")}
-                      >
-                        <SelectTrigger className="pl-10 opacity-60 cursor-not-allowed">
-                          <SelectValue placeholder="Pilih cabang" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {branches.map((branch) => (
-                            <SelectItem key={branch} value={branch}>
-                              {branch}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        placeholder="Cabang"
+                        className="pl-10 bg-gray-50 cursor-not-allowed"
+                        disabled
+                        readOnly
+                      />
                     </div>
                   </div>
 
@@ -307,6 +279,13 @@ export const Profile: React.FC = () => {
                   <CardDescription>Detail akun dan hak akses</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium">Email</span>
+                    <span className="text-sm text-gray-600">
+                      {currentUser.email}
+                    </span>
+                  </div>
+
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium">Role</span>
                     <Badge

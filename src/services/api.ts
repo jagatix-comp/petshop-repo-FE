@@ -407,7 +407,9 @@ class ApiService {
     return this.request<UserProfileResponse>("/auth/me");
   }
 
-  async updateProfile(data: UpdateProfileRequest): Promise<{ status: string; message: string }> {
+  async updateProfile(
+    data: UpdateProfileRequest
+  ): Promise<{ status: string; message: string }> {
     return this.request<{ status: string; message: string }>("/auth/me", {
       method: "PUT",
       headers: this.getAuthHeaders(),
@@ -415,12 +417,17 @@ class ApiService {
     });
   }
 
-  async changePassword(data: ChangePasswordRequest): Promise<{ status: string; message: string }> {
-    return this.request<{ status: string; message: string }>("/auth/me/change-password", {
-      method: "PATCH",
-      headers: this.getAuthHeaders(),
-      body: JSON.stringify(data),
-    });
+  async changePassword(
+    data: ChangePasswordRequest
+  ): Promise<{ status: string; message: string }> {
+    return this.request<{ status: string; message: string }>(
+      "/auth/me/change-password",
+      {
+        method: "PATCH",
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify(data),
+      }
+    );
   }
 }
 

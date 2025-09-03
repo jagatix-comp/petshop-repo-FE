@@ -20,11 +20,19 @@ interface StoreState {
   refreshToken: () => Promise<boolean>;
   logout: () => void;
   initializeAuth: () => void;
-  
+
   // Profile
   loadProfile: () => Promise<boolean>;
-  updateProfile: (data: { name: string; username: string; phoneNumber: string }) => Promise<boolean>;
-  changePassword: (data: { oldPassword: string; newPassword: string; confirmPassword: string }) => Promise<boolean>;
+  updateProfile: (data: {
+    name: string;
+    username: string;
+    phoneNumber: string;
+  }) => Promise<boolean>;
+  changePassword: (data: {
+    oldPassword: string;
+    newPassword: string;
+    confirmPassword: string;
+  }) => Promise<boolean>;
 
   // Products
   products: Product[];
@@ -433,7 +441,7 @@ export const useStore = create<StoreState>((set, get) => ({
           phoneNumber: response.data.phoneNumber,
           tenant: response.data.tenant,
         };
-        
+
         set({ user });
         localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
         return true;
