@@ -280,13 +280,6 @@ export const Profile: React.FC = () => {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium">Email</span>
-                    <span className="text-sm text-gray-600">
-                      {currentUser.email}
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between items-center">
                     <span className="text-sm font-medium">Role</span>
                     <Badge
                       className={
