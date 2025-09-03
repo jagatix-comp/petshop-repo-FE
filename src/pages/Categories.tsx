@@ -339,7 +339,7 @@ export const Categories: React.FC = () => {
               <input
                 type="text"
                 id="categoryName"
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-teal-500 focus:border-teal-500"
                 placeholder="Enter category name"
                 value={newCategoryName}
                 onChange={(e) => setNewCategoryName(e.target.value)}
