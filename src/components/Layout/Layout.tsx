@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Menu, X, User, Settings, ChevronDown } from "lucide-react";
+import { Menu, LogOut, User, Settings, ChevronDown } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Sidebar } from "./Sidebar";
 import { useStore } from "../../store/useStore";
@@ -131,8 +131,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                     }}
                     className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
                   >
-                    <X size={16} className="mr-2" />
-                    Logout
+                    <LogOut size={20} />
+                    <span className="font-normal mx-1">Logout</span>
                   </button>
                 </div>
               )}
