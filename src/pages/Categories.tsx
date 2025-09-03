@@ -326,7 +326,7 @@ export const Categories: React.FC = () => {
         <Modal
           isOpen={isAddModalOpen}
           onClose={resetForm}
-          title={editingCategory ? "Edit Category" : "Add New Category"}
+          title={editingCategory ? "Edit Category" : "Tambah Kategori Baru"}
         >
           <div className="space-y-4">
             <div>
@@ -334,7 +334,7 @@ export const Categories: React.FC = () => {
                 htmlFor="categoryName"
                 className="block text-sm font-medium text-gray-700"
               >
-                Category Name
+                Nama Kategori
               </label>
               <input
                 type="text"
@@ -364,9 +364,9 @@ export const Categories: React.FC = () => {
                     {editingCategory ? "Updating..." : "Adding..."}
                   </>
                 ) : editingCategory ? (
-                  "Update Category"
+                  "Ubah Kategori"
                 ) : (
-                  "Add Category"
+                  "Tambah Kategori"
                 )}
               </Button>
             </div>
