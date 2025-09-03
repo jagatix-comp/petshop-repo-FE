@@ -128,7 +128,10 @@ export const Login: React.FC = () => {
 
         <div className="mt-6 p-4 bg-gray-50 rounded-lg">
           <p className="text-sm text-gray-600 text-center">
-            Demo credentials: username "adit" dengan password "Rani123"
+            Demo credentials: username "adit" dengan password "Maharani"
+          </p>
+          <p className="text-sm text-gray-600 text-center">
+            JANGAN UBAH PASSWORD
           </p>
         </div>
       </div>

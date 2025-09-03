@@ -407,7 +407,8 @@ export const Profile: React.FC = () => {
                         </button>
                       </div>
                       <p className="text-xs text-gray-500">
-                        Password minimal 6 karakter dan mengandung minimal satu huruf kapital
+                        Password minimal 6 karakter dan mengandung minimal satu
+                        huruf kapital
                       </p>
                     </div>
 
