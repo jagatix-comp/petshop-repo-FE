@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { User, Lock, Building, Save } from "lucide-react";
+import { User, Lock, Building, Save, Eye, EyeOff } from "lucide-react";
 import { Layout } from "../components/Layout/Layout";
 import { Button } from "../components/ui/Button";
 import {
@@ -35,6 +35,11 @@ export const Profile: React.FC = () => {
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
+  });
+  const [showPasswords, setShowPasswords] = useState({
+    currentPassword: false,
+    newPassword: false,
+    confirmPassword: false,
   });
   const { toast, toasts, dismissToast } = useToast();
 
@@ -169,6 +174,13 @@ export const Profile: React.FC = () => {
         [field]: value,
       }));
     };
+
+  const togglePasswordVisibility = (field: keyof typeof showPasswords) => {
+    setShowPasswords((prev) => ({
+      ...prev,
+      [field]: !prev[field],
+    }));
+  };
 
   if (!currentUser) {
     return (
@@ -324,50 +336,102 @@ export const Profile: React.FC = () => {
                       <Label htmlFor="current-password">
                         Password Saat Ini
                       </Label>
-                      <Input
-                        id="current-password"
-                        type="password"
-                        value={passwordData.currentPassword}
-                        onChange={(e) =>
-                          handlePasswordChange("currentPassword")(
-                            e.target.value
-                          )
-                        }
-                        placeholder="Masukkan password saat ini"
-                        required
-                      />
+                      <div className="relative">
+                        <Input
+                          id="current-password"
+                          type={
+                            showPasswords.currentPassword ? "text" : "password"
+                          }
+                          value={passwordData.currentPassword}
+                          onChange={(e) =>
+                            handlePasswordChange("currentPassword")(
+                              e.target.value
+                            )
+                          }
+                          placeholder="Masukkan password saat ini"
+                          className="pr-10"
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            togglePasswordVisibility("currentPassword")
+                          }
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                        >
+                          {showPasswords.currentPassword ? (
+                            <EyeOff className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                          ) : (
+                            <Eye className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                          )}
+                        </button>
+                      </div>
                     </div>
 
                     <div className="space-y-2">
                       <Label htmlFor="new-password">Password Baru</Label>
-                      <Input
-                        id="new-password"
-                        type="password"
-                        value={passwordData.newPassword}
-                        onChange={(e) =>
-                          handlePasswordChange("newPassword")(e.target.value)
-                        }
-                        placeholder="Masukkan password baru"
-                        required
-                      />
+                      <div className="relative">
+                        <Input
+                          id="new-password"
+                          type={showPasswords.newPassword ? "text" : "password"}
+                          value={passwordData.newPassword}
+                          onChange={(e) =>
+                            handlePasswordChange("newPassword")(e.target.value)
+                          }
+                          placeholder="Masukkan password baru"
+                          className="pr-10"
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            togglePasswordVisibility("newPassword")
+                          }
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                        >
+                          {showPasswords.newPassword ? (
+                            <EyeOff className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                          ) : (
+                            <Eye className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                          )}
+                        </button>
+                      </div>
                     </div>
 
                     <div className="space-y-2">
                       <Label htmlFor="confirm-password">
                         Konfirmasi Password
                       </Label>
-                      <Input
-                        id="confirm-password"
-                        type="password"
-                        value={passwordData.confirmPassword}
-                        onChange={(e) =>
-                          handlePasswordChange("confirmPassword")(
-                            e.target.value
-                          )
-                        }
-                        placeholder="Konfirmasi password baru"
-                        required
-                      />
+                      <div className="relative">
+                        <Input
+                          id="confirm-password"
+                          type={
+                            showPasswords.confirmPassword ? "text" : "password"
+                          }
+                          value={passwordData.confirmPassword}
+                          onChange={(e) =>
+                            handlePasswordChange("confirmPassword")(
+                              e.target.value
+                            )
+                          }
+                          placeholder="Konfirmasi password baru"
+                          className="pr-10"
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            togglePasswordVisibility("confirmPassword")
+                          }
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                        >
+                          {showPasswords.confirmPassword ? (
+                            <EyeOff className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                          ) : (
+                            <Eye className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                          )}
+                        </button>
+                      </div>
                     </div>
 
                     <Separator />
