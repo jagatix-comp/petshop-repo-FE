@@ -206,7 +206,7 @@ export const Profile: React.FC = () => {
 
   return (
     <Layout>
-      <div className="min-h-screen p-4 md:p-6 lg:p-8">
+      <div>
         <div className="max-w-7xl mx-auto space-y-6">
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-gray-900">
