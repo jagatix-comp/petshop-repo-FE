@@ -179,9 +179,16 @@ export const useStore = create<StoreState>((set, get) => ({
       return false;
     }
   },
-  logout: () => {
-    localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-    localStorage.removeItem(STORAGE_KEYS.USER);
+  logout: async () => {
+    try {
+      // Call API logout to clear HTTP-only refresh token cookie
+      await apiService.logout();
+    } catch (error) {
+      console.error("❌ Store: Logout API call failed:", error);
+      // Continue with local cleanup even if API call fails
+    }
+    
+    // Clear local state
     set({ user: null, isAuthenticated: false });
   },
   initializeAuth: () => {

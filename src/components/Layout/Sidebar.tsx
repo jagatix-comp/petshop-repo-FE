@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   Package,
-  ShoppingCart,
-  FileText,
-  LogOut,
-  PawPrint,
+  User,
   ChevronDown,
   ChevronRight,
   Tag,
   Bookmark,
-  User,
+  LogOut,
   Users,
+  ShoppingCart,
+  FileText,
+  PawPrint,
 } from "lucide-react";
 import { useStore } from "../../store/useStore";
 import { ROUTES } from "../../constants";
@@ -21,6 +21,12 @@ export const Sidebar: React.FC = () => {
   const logout = useStore((state) => state.logout);
   const user = useStore((state) => state.user);
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login");
+  };
   const [isProductsOpen, setIsProductsOpen] = useState(
     location.pathname.includes(ROUTES.PRODUCTS) ||
       location.pathname.includes(ROUTES.BRANDS) ||
@@ -134,7 +140,7 @@ export const Sidebar: React.FC = () => {
 
       <div className="p-4 border-t border-gray-200">
         <button
-          onClick={logout}
+          onClick={handleLogout}
           className="w-full flex items-center space-x-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
         >
           <LogOut size={20} />
