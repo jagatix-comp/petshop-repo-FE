@@ -46,7 +46,8 @@ export const Categories: React.FC = () => {
 
     // Check if category already exists
     const existingCategory = categories.find(
-      (category) => category.name.toLowerCase() === newCategoryName.trim().toLowerCase()
+      (category) =>
+        category.name.toLowerCase() === newCategoryName.trim().toLowerCase()
     );
 
     if (existingCategory) {
@@ -106,8 +107,8 @@ export const Categories: React.FC = () => {
 
     // Check if category name already exists (excluding current category)
     const existingCategory = categories.find(
-      (category) => 
-        category.id !== editingCategory.id && 
+      (category) =>
+        category.id !== editingCategory.id &&
         category.name.toLowerCase() === newCategoryName.trim().toLowerCase()
     );
 
@@ -253,10 +254,10 @@ export const Categories: React.FC = () => {
                   Name
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Created At
+                  Dibuat
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Updated At
+                  Diupdate
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
@@ -303,7 +304,7 @@ export const Categories: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <button
                         onClick={() => handleEditCategory(category)}
-                        className="text-indigo-600 hover:text-indigo-900 mr-4"
+                        className="text-teal-600 hover:text-teal-900 mr-4"
                       >
                         <Edit size={16} />
                       </button>
