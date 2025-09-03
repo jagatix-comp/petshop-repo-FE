@@ -187,7 +187,7 @@ export const useStore = create<StoreState>((set, get) => ({
       console.error("❌ Store: Logout API call failed:", error);
       // Continue with local cleanup even if API call fails
     }
-    
+
     // Clear local state
     set({ user: null, isAuthenticated: false });
   },

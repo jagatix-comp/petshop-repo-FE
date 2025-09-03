@@ -122,7 +122,7 @@ class ApiService {
 
     const config: RequestInit = {
       headers: this.getAuthHeaders(),
-      credentials: 'include', // Include cookies for refresh token
+      credentials: "include", // Include cookies for refresh token
       ...options,
     };
 
@@ -209,7 +209,7 @@ class ApiService {
     try {
       return await this.request<LoginResponse>(endpoint, {
         method: "POST",
-        credentials: 'include', // Include cookies to receive refresh token
+        credentials: "include", // Include cookies to receive refresh token
         body: JSON.stringify({ username, password }),
       });
     } catch (error) {
@@ -223,15 +223,18 @@ class ApiService {
     console.log("🔄 Attempting to refresh token...");
     try {
       // No need to send access token - backend will get refresh token from HTTP-only cookie
-      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.AUTH.REFRESH}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-tenant-name": TENANT_NAME,
-          // No Authorization header needed for refresh endpoint
-        },
-        credentials: 'include', // Include cookies to send refresh token
-      });
+      const response = await fetch(
+        `${API_BASE_URL}${API_ENDPOINTS.AUTH.REFRESH}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-tenant-name": TENANT_NAME,
+            // No Authorization header needed for refresh endpoint
+          },
+          credentials: "include", // Include cookies to send refresh token
+        }
+      );
 
       console.log("📡 Refresh Token Response:", {
         status: response.status,
@@ -255,15 +258,15 @@ class ApiService {
   async logout() {
     try {
       // Call logout endpoint to clear HTTP-only refresh token cookie
-      await this.request(API_ENDPOINTS.AUTH.LOGOUT, { 
+      await this.request(API_ENDPOINTS.AUTH.LOGOUT, {
         method: "POST",
-        credentials: 'include' // Include cookies to clear refresh token
+        credentials: "include", // Include cookies to clear refresh token
       });
     } catch (error) {
       console.error("❌ Logout API call failed:", error);
       // Continue with local cleanup even if API call fails
     }
-    
+
     // Clear local storage
     localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
     localStorage.removeItem(STORAGE_KEYS.USER);
