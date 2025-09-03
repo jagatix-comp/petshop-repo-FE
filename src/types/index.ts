@@ -38,6 +38,13 @@ export interface User {
   name: string;
   email: string;
   role: string;
+  username?: string;
+  phoneNumber?: string;
+  tenant?: {
+    id: string;
+    name: string;
+    location: string;
+  };
 }
 
 export interface Brand {

@@ -20,6 +20,11 @@ interface StoreState {
   refreshToken: () => Promise<boolean>;
   logout: () => void;
   initializeAuth: () => void;
+  
+  // Profile
+  loadProfile: () => Promise<boolean>;
+  updateProfile: (data: { name: string; username: string; phoneNumber: string }) => Promise<boolean>;
+  changePassword: (data: { oldPassword: string; newPassword: string; confirmPassword: string }) => Promise<boolean>;
 
   // Products
   products: Product[];
@@ -412,5 +417,59 @@ export const useStore = create<StoreState>((set, get) => ({
         item.product.id === productId ? { ...item, quantity } : item
       ),
     }));
+  },
+
+  // Profile
+  loadProfile: async () => {
+    try {
+      const response = await apiService.getProfile();
+      if (response.status === "success") {
+        const user = {
+          id: response.data.id,
+          name: response.data.name,
+          email: response.data.username, // Using username as email for compatibility
+          role: response.data.role,
+          username: response.data.username,
+          phoneNumber: response.data.phoneNumber,
+          tenant: response.data.tenant,
+        };
+        
+        set({ user });
+        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("Error loading profile:", error);
+      return false;
+    }
+  },
+
+  updateProfile: async (data) => {
+    try {
+      const response = await apiService.updateProfile(data);
+      if (response.status === "success") {
+        // Reload profile after successful update
+        await get().loadProfile();
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      return false;
+    }
+  },
+
+  changePassword: async (data) => {
+    try {
+      const response = await apiService.changePassword(data);
+      if (response.status === "success") {
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("Error changing password:", error);
+      return false;
+    }
   },
 }));

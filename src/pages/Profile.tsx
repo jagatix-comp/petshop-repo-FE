@@ -25,12 +25,13 @@ import { useToast } from "../hooks/useToast";
 import { ToastContainer } from "../components/ui/Toast";
 
 export const Profile: React.FC = () => {
-  const { user: currentUser } = useStore();
+  const { user: currentUser, loadProfile, updateProfile, changePassword } = useStore();
   const [loading, setLoading] = useState(false);
   const [profileData, setProfileData] = useState({
     name: "",
     username: "",
     email: "",
+    phoneNumber: "",
     branch: "",
   });
   const [passwordData, setPasswordData] = useState({
@@ -43,12 +44,21 @@ export const Profile: React.FC = () => {
   const branches = ["Main Store", "Branch A", "Branch B"];
 
   useEffect(() => {
+    const initializeProfile = async () => {
+      // Load fresh profile data from API
+      await loadProfile();
+    };
+    initializeProfile();
+  }, [loadProfile]);
+
+  useEffect(() => {
     if (currentUser) {
       setProfileData({
         name: currentUser.name || "",
-        username: currentUser.email || "",
+        username: currentUser.username || currentUser.email || "",
         email: currentUser.email || "",
-        branch: "Main Store", // Default branch since we don't have this in our user model
+        phoneNumber: currentUser.phoneNumber || "",
+        branch: currentUser.tenant?.name || "Main Store",
       });
     }
   }, [currentUser]);
@@ -59,18 +69,30 @@ export const Profile: React.FC = () => {
 
     setLoading(true);
     try {
-      // Simulate API call since we don't have user update endpoint
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      toast({
-        title: "Berhasil",
-        description: "Profil berhasil diperbarui",
-        variant: "success",
+      const success = await updateProfile({
+        name: profileData.name,
+        username: profileData.username,
+        phoneNumber: profileData.phoneNumber,
       });
+
+      if (success) {
+        toast({
+          title: "Berhasil",
+          description: "Profil berhasil diperbarui",
+          variant: "success",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Gagal memperbarui profil",
+          variant: "destructive",
+        });
+      }
     } catch (error) {
+      console.error("Error updating profile:", error);
       toast({
         title: "Error",
-        description: "Gagal memperbarui profil",
+        description: "Terjadi kesalahan saat memperbarui profil",
         variant: "destructive",
       });
     } finally {
@@ -102,24 +124,36 @@ export const Profile: React.FC = () => {
 
     setLoading(true);
     try {
-      // Simulate API call since we don't have password update endpoint
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      setPasswordData({
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: "",
+      const success = await changePassword({
+        oldPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword,
+        confirmPassword: passwordData.confirmPassword,
       });
 
-      toast({
-        title: "Berhasil",
-        description: "Password berhasil diubah",
-        variant: "success",
-      });
+      if (success) {
+        setPasswordData({
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: "",
+        });
+
+        toast({
+          title: "Berhasil",
+          description: "Password berhasil diubah",
+          variant: "success",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Gagal mengubah password. Periksa password lama Anda.",
+          variant: "destructive",
+        });
+      }
     } catch (error) {
+      console.error("Error changing password:", error);
       toast({
         title: "Error",
-        description: "Gagal mengubah password",
+        description: "Terjadi kesalahan saat mengubah password",
         variant: "destructive",
       });
     } finally {
@@ -213,8 +247,21 @@ export const Profile: React.FC = () => {
                         placeholder="Masukkan email"
                         className="pl-10"
                         required
+                        disabled
                       />
                     </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="phoneNumber">Nomor Telepon</Label>
+                    <Input
+                      id="phoneNumber"
+                      type="tel"
+                      value={profileData.phoneNumber}
+                      onChange={(e) => handleChange("phoneNumber")(e.target.value)}
+                      placeholder="Masukkan nomor telepon"
+                      required
+                    />
                   </div>
 
                   <div className="space-y-2">
@@ -225,7 +272,7 @@ export const Profile: React.FC = () => {
                         value={profileData.branch}
                         onValueChange={handleChange("branch")}
                       >
-                        <SelectTrigger className="pl-10">
+                        <SelectTrigger className="pl-10 opacity-60 cursor-not-allowed">
                           <SelectValue placeholder="Pilih cabang" />
                         </SelectTrigger>
                         <SelectContent>

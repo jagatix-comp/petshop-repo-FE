@@ -27,6 +27,37 @@ interface RefreshTokenResponse {
   };
 }
 
+interface UserProfileResponse {
+  status: string;
+  message: string;
+  data: {
+    id: string;
+    name: string;
+    username: string;
+    phoneNumber: string;
+    role: string;
+    createdAt: string;
+    updatedAt: string;
+    tenant: {
+      id: string;
+      name: string;
+      location: string;
+    };
+  };
+}
+
+interface UpdateProfileRequest {
+  name: string;
+  username: string;
+  phoneNumber: string;
+}
+
+interface ChangePasswordRequest {
+  oldPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
 class ApiService {
   private getAuthHeaders() {
     const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
@@ -369,6 +400,27 @@ class ApiService {
       best_selling: any[];
       revenue_by_category: any[];
     }>(`/reports/products?${query}`);
+  }
+
+  // Profile API endpoints
+  async getProfile(): Promise<UserProfileResponse> {
+    return this.request<UserProfileResponse>("/auth/me");
+  }
+
+  async updateProfile(data: UpdateProfileRequest): Promise<{ status: string; message: string }> {
+    return this.request<{ status: string; message: string }>("/auth/me", {
+      method: "PUT",
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+  }
+
+  async changePassword(data: ChangePasswordRequest): Promise<{ status: string; message: string }> {
+    return this.request<{ status: string; message: string }>("/auth/me/change-password", {
+      method: "PATCH",
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
   }
 }
 
