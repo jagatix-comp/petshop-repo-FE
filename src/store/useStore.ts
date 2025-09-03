@@ -122,20 +122,31 @@ export const useStore = create<StoreState>((set, get) => ({
       const response = await apiService.login(username, password);
 
       if (response.status === "success") {
-        const user = {
-          id: "1",
-          name: username,
-          email: username,
-          role: "admin",
-        };
-
+        // Save access token first
         localStorage.setItem(
           STORAGE_KEYS.ACCESS_TOKEN,
           response.data.accessToken
         );
-        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
-        set({ user, isAuthenticated: true });
-        return true;
+
+        // Load actual profile data from API
+        const profileLoaded = await get().loadProfile();
+
+        if (profileLoaded) {
+          set({ isAuthenticated: true });
+          return true;
+        } else {
+          // Fallback: create user object from login data
+          const user = {
+            id: "1",
+            name: username,
+            email: username,
+            role: "admin",
+          };
+
+          localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
+          set({ user, isAuthenticated: true });
+          return true;
+        }
       }
       return false;
     } catch (error) {
@@ -177,6 +188,9 @@ export const useStore = create<StoreState>((set, get) => ({
       if (token && userData) {
         const user = JSON.parse(userData);
         set({ user, isAuthenticated: true });
+
+        // Load fresh profile data from API in background
+        get().loadProfile().catch(console.error);
       }
     } catch (error) {
       console.error("Failed to initialize auth:", error);

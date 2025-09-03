@@ -305,16 +305,32 @@ export const Profile: React.FC = () => {
                     <span className="text-sm font-medium">Role</span>
                     <Badge
                       className={
-                        currentUser.role === "admin"
+                        currentUser.role === "super_admin"
+                          ? "bg-purple-600 text-white"
+                          : currentUser.role === "admin"
                           ? "bg-teal-600 text-white"
                           : ""
                       }
                       variant={
-                        currentUser.role === "admin" ? "default" : "secondary"
+                        currentUser.role === "super_admin" ||
+                        currentUser.role === "admin"
+                          ? "default"
+                          : "secondary"
                       }
                     >
-                      {currentUser.role === "admin" ? "Admin" : "User"}
+                      {currentUser.role === "super_admin"
+                        ? "Super Admin"
+                        : currentUser.role === "admin"
+                        ? "Admin"
+                        : "User"}
                     </Badge>
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium">Email</span>
+                    <span className="text-sm text-gray-600">
+                      {currentUser.email}
+                    </span>
                   </div>
 
                   <div className="flex justify-between items-center">

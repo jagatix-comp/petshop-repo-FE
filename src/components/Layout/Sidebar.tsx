@@ -51,7 +51,7 @@ export const Sidebar: React.FC = () => {
     { path: ROUTES.CASHIER, icon: ShoppingCart, label: "Kasir" },
     { path: ROUTES.REPORTS, icon: FileText, label: "Laporan" },
     ...(user?.role === "super_admin"
-      ? [{ path: "/users", icon: Users, label: "Manajemen User" }]
+      ? [{ path: "/users", icon: Users, label: "Pengguna" }]
       : []),
     { path: ROUTES.PROFILE, icon: User, label: "Profile" },
   ];
