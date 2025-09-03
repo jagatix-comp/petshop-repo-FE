@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, User, Settings, ChevronDown } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Sidebar } from "./Sidebar";
+import { useStore } from "../../store/useStore";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -9,6 +11,9 @@ interface LayoutProps {
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const user = useStore((state) => state.user);
+  const logout = useStore((state) => state.logout);
 
   // Check if screen is mobile size
   useEffect(() => {
@@ -25,6 +30,19 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     checkMobile();
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (!target.closest("[data-profile-dropdown]")) {
+        setIsProfileDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const toggleSidebar = () => {
@@ -63,14 +81,61 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               onClick={toggleSidebar}
               className="p-2 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500"
             >
-              {isSidebarOpen ? (
-                <X size={20} className="text-gray-600" />
-              ) : (
-                <Menu size={20} className="text-gray-600" />
-              )}
+              <Menu size={20} className="text-gray-600" />
             </button>
-            <div className="text-sm text-gray-600">
-              Pet Shop Management System
+
+            {/* Profile Dropdown */}
+            <div className="relative" data-profile-dropdown>
+              <button
+                onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500"
+              >
+                <div className="w-8 h-8 bg-teal-600 rounded-full flex items-center justify-center">
+                  <User size={16} className="text-white" />
+                </div>
+                <div className="hidden sm:block text-left">
+                  <p className="text-sm font-medium text-gray-900">
+                    {user?.name || user?.username || "User"}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {user?.role === "super_admin" ? "Super Admin" : "Admin"}
+                  </p>
+                </div>
+                <ChevronDown size={16} className="text-gray-600" />
+              </button>
+
+              {/* Dropdown Menu */}
+              {isProfileDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                  <div className="px-4 py-2 border-b border-gray-200">
+                    <p className="text-sm font-medium text-gray-900">
+                      {user?.name || user?.username || "User"}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {user?.role === "super_admin" ? "Super Admin" : "Admin"}
+                    </p>
+                  </div>
+                  <Link
+                    to="/profile"
+                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    onClick={() => setIsProfileDropdownOpen(false)}
+                  >
+                    <Settings size={16} className="mr-2" />
+                    Profile & Settings
+                  </Link>
+                  <button
+                    onClick={async () => {
+                      setIsProfileDropdownOpen(false);
+                      await logout();
+                      window.location.href = "/login";
+                    }}
+                    className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                  >
+                    <X size={16} className="mr-2" />
+                    Logout
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
