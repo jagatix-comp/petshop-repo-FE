@@ -156,18 +156,22 @@ export const useStore = create<StoreState>((set, get) => ({
   },
   refreshToken: async () => {
     try {
+      console.log("🔄 Store: Attempting token refresh...");
       const response = await apiService.refreshToken();
 
       if (response.status === "success") {
+        console.log("✅ Store: Token refresh successful");
         localStorage.setItem(
           STORAGE_KEYS.ACCESS_TOKEN,
           response.data.accessToken
         );
         return true;
+      } else {
+        console.log("❌ Store: Token refresh failed - invalid response");
+        return false;
       }
-      return false;
     } catch (error) {
-      console.error("Refresh token error:", error);
+      console.error("❌ Store: Refresh token error:", error);
       // If refresh fails, logout user
       localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
       localStorage.removeItem(STORAGE_KEYS.USER);

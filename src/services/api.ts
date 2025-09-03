@@ -142,30 +142,41 @@ class ApiService {
       ) {
         // Try to refresh token
         try {
+          console.log("🔄 Access token expired, attempting refresh...");
           const refreshResponse = await this.refreshToken();
           if (refreshResponse.status === "success") {
+            console.log("✅ Token refresh successful");
             localStorage.setItem(
-              "accessToken",
+              STORAGE_KEYS.ACCESS_TOKEN,
               refreshResponse.data.accessToken
             );
+            
             // Retry the original request with new token
             const retryConfig: RequestInit = {
               ...config,
               headers: this.getAuthHeaders(),
             };
+            console.log("🔄 Retrying original request with new token...");
             const retryResponse = await fetch(url, retryConfig);
             if (retryResponse.ok) {
+              console.log("✅ Retry request successful");
               return retryResponse.json();
+            } else {
+              console.error("❌ Retry request failed:", retryResponse.status);
             }
+          } else {
+            console.error("❌ Token refresh failed - invalid response");
           }
         } catch (refreshError) {
-          console.error("Token refresh failed:", refreshError);
+          console.error("❌ Token refresh failed with error:", refreshError);
         }
 
         // If refresh fails, redirect to login
+        console.log("🚪 Redirecting to login due to auth failure");
         localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
         localStorage.removeItem(STORAGE_KEYS.USER);
         window.location.href = "/login";
+        return Promise.reject(new Error("Authentication failed"));
       }
 
       // Log error details
@@ -207,9 +218,17 @@ class ApiService {
   }
 
   async refreshToken(): Promise<RefreshTokenResponse> {
-    return this.request<RefreshTokenResponse>(API_ENDPOINTS.AUTH.REFRESH, {
-      method: "POST",
-    });
+    console.log("🔄 Attempting to refresh token...");
+    try {
+      const response = await this.request<RefreshTokenResponse>(API_ENDPOINTS.AUTH.REFRESH, {
+        method: "POST",
+      });
+      console.log("✅ Refresh token response:", response.status);
+      return response;
+    } catch (error) {
+      console.error("❌ Refresh token failed:", error);
+      throw error;
+    }
   }
 
   async logout() {

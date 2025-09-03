@@ -327,13 +327,6 @@ export const Profile: React.FC = () => {
                   </div>
 
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium">Email</span>
-                    <span className="text-sm text-gray-600">
-                      {currentUser.email}
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between items-center">
                     <span className="text-sm font-medium">Cabang</span>
                     <Badge variant="outline">{profileData.branch}</Badge>
                   </div>
