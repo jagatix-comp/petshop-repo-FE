@@ -15,7 +15,7 @@ export const Products: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const { toast, toasts, dismissToast } = useToast();
+  const { toasts, dismissToast } = useToast();
 
   useEffect(() => {
     loadProducts();
@@ -83,15 +83,12 @@ export const Products: React.FC = () => {
   };
 
   return (
-    <Layout>
+    <Layout
+      pageTitle="Manajemen Produk"
+      pageDescription="Kelola produk pet shop Anda"
+    >
       <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-              Manajemen Produk
-            </h1>
-            <p className="text-gray-600">Kelola produk pet shop Anda</p>
-          </div>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-4">
           <Button
             onClick={handleAdd}
             className="flex items-center justify-center space-x-2 w-full sm:w-auto"

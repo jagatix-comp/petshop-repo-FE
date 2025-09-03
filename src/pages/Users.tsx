@@ -109,17 +109,13 @@ export const Users: React.FC = () => {
   }
 
   return (
-    <Layout>
+    <Layout
+      pageTitle="Manajemen User"
+      pageDescription="Kelola user dan hak akses sistem"
+    >
       <div>
         <div className="max-w-7xl mx-auto space-y-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight text-gray-900 flex items-center gap-2">
-                <UsersIcon className="h-8 w-8" />
-                Manajemen User
-              </h1>
-              <p className="text-gray-600">Kelola user dan hak akses sistem</p>
-            </div>
+          <div className="flex items-center justify-end">
             <Button onClick={handleAdd} className="flex items-center space-x-2">
               <Plus size={20} />
               <span>Tambah User</span>

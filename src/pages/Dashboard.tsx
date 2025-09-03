@@ -45,15 +45,11 @@ export const Dashboard: React.FC = () => {
   ];
 
   return (
-    <Layout>
+    <Layout
+      pageTitle="Dashboard"
+      pageDescription={`Selamat datang, ${user?.username}!`}
+    >
       <div className="space-y-6">
-        <div className="mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-            Dashboard
-          </h1>
-          <p className="text-gray-600">Selamat datang, {user?.username}!</p>
-        </div>
-
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
           {stats.map((stat, index) => (
             <div

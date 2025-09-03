@@ -213,12 +213,12 @@ export const Categories: React.FC = () => {
   };
 
   return (
-    <Layout>
+    <Layout
+      pageTitle="Manajemen Kategori"
+      pageDescription="Kelola kategori produk pet shop Anda"
+    >
       <div>
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Manajemen Kategori
-          </h1>
+        <div className="flex justify-end items-center mb-6">
           <Button
             onClick={() => setIsAddModalOpen(true)}
             className="flex items-center gap-2"

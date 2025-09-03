@@ -6,9 +6,15 @@ import { useStore } from "../../store/useStore";
 
 interface LayoutProps {
   children: React.ReactNode;
+  pageTitle?: string;
+  pageDescription?: string;
 }
 
-export const Layout: React.FC<LayoutProps> = ({ children }) => {
+export const Layout: React.FC<LayoutProps> = ({
+  children,
+  pageTitle,
+  pageDescription,
+}) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
@@ -74,15 +80,29 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           isSidebarOpen && !isMobile ? "ml-64" : "ml-0"
         } overflow-auto`}
       >
-        {/* Header with Menu Button */}
+        {/* Header with Menu Button, Page Title, and Profile */}
         <div className="sticky top-0 z-30 bg-white shadow-sm border-b border-gray-200 px-4 py-3">
           <div className="flex items-center justify-between">
-            <button
-              onClick={toggleSidebar}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500"
-            >
-              <Menu size={20} className="text-gray-600" />
-            </button>
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={toggleSidebar}
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500"
+              >
+                <Menu size={20} className="text-gray-600" />
+              </button>
+
+              {/* Page Title */}
+              {pageTitle && (
+                <div className="hidden sm:block">
+                  <h1 className="text-lg sm:text-xl font-bold text-gray-900">
+                    {pageTitle}
+                  </h1>
+                  {pageDescription && (
+                    <p className="text-xs text-gray-600">{pageDescription}</p>
+                  )}
+                </div>
+              )}
+            </div>
 
             {/* Profile Dropdown */}
             <div className="relative" data-profile-dropdown>
@@ -141,7 +161,19 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         </div>
 
         {/* Page Content */}
-        <div className="p-4 sm:p-6">{children}</div>
+        <div className="p-4 sm:p-6">
+          {/* Mobile Page Title - Only shown on mobile when pageTitle exists */}
+          {pageTitle && (
+            <div className="block sm:hidden mb-4">
+              <h1 className="text-xl font-bold text-gray-900">{pageTitle}</h1>
+              {pageDescription && (
+                <p className="text-sm text-gray-600 mt-1">{pageDescription}</p>
+              )}
+            </div>
+          )}
+
+          {children}
+        </div>
       </main>
     </div>
   );

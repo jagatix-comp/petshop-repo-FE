@@ -205,16 +205,12 @@ export const Profile: React.FC = () => {
   }
 
   return (
-    <Layout>
+    <Layout
+      pageTitle="Profile"
+      pageDescription="Kelola informasi akun dan keamanan"
+    >
       <div>
         <div className="max-w-7xl mx-auto space-y-6">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-gray-900">
-              Profile
-            </h1>
-            <p className="text-gray-600">Kelola informasi akun dan keamanan</p>
-          </div>
-
           <div className="grid gap-6 lg:grid-cols-2">
             {/* Profile Information */}
             <Card>
