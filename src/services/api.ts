@@ -58,6 +58,45 @@ interface ChangePasswordRequest {
   confirmPassword: string;
 }
 
+interface UsersResponse {
+  status: string;
+  message: string;
+  data: {
+    id: string;
+    name: string;
+    username: string;
+    phoneNumber: string;
+    role: string;
+    createdAt: string;
+    updatedAt: string;
+    tenant: {
+      id: string;
+      name: string;
+      location: string;
+    };
+  }[];
+}
+
+interface CreateUserRequest {
+  name: string;
+  username: string;
+  password: string;
+  confirmPassword: string;
+  phoneNumber: string;
+  role: string;
+  tenantID: string;
+}
+
+interface UpdateUserRequest {
+  name: string;
+  username: string;
+  password?: string;
+  confirmPassword?: string;
+  phoneNumber: string;
+  role: string;
+  tenantID: string;
+}
+
 class ApiService {
   private getAuthHeaders() {
     const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
@@ -428,6 +467,39 @@ class ApiService {
         body: JSON.stringify(data),
       }
     );
+  }
+
+  // User Management API endpoints (for super admin)
+  async getAllUsers(): Promise<UsersResponse> {
+    return this.request<UsersResponse>("/users");
+  }
+
+  async createUser(
+    data: CreateUserRequest
+  ): Promise<{ status: string; message: string }> {
+    return this.request<{ status: string; message: string }>("/users", {
+      method: "POST",
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateUser(
+    id: string,
+    data: UpdateUserRequest
+  ): Promise<{ status: string; message: string }> {
+    return this.request<{ status: string; message: string }>(`/users/${id}`, {
+      method: "PUT",
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteUser(id: string): Promise<{ status: string; message: string }> {
+    return this.request<{ status: string; message: string }>(`/users/${id}`, {
+      method: "DELETE",
+      headers: this.getAuthHeaders(),
+    });
   }
 }
 

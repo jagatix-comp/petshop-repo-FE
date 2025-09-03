@@ -13,8 +13,7 @@ import { Categories } from "./pages/Categories";
 import { Cashier } from "./pages/Cashier";
 import { Reports } from "./pages/Reports";
 import { Profile } from "./pages/Profile";
-import ProfileSimple from "./pages/ProfileSimple";
-import ProfileTest from "./pages/ProfileTest";
+import { Users } from "./pages/Users";
 import { useStore } from "./store/useStore";
 import { useAuth } from "./hooks/useAuth";
 import { ROUTES } from "./constants";
@@ -110,6 +109,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Profile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/users"
+          element={
+            <ProtectedRoute>
+              <Users />
             </ProtectedRoute>
           }
         />

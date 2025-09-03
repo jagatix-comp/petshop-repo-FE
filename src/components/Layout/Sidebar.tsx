@@ -12,12 +12,14 @@ import {
   Tag,
   Bookmark,
   User,
+  Users,
 } from "lucide-react";
 import { useStore } from "../../store/useStore";
 import { ROUTES } from "../../constants";
 
 export const Sidebar: React.FC = () => {
   const logout = useStore((state) => state.logout);
+  const user = useStore((state) => state.user);
   const location = useLocation();
   const [isProductsOpen, setIsProductsOpen] = useState(
     location.pathname.includes(ROUTES.PRODUCTS) ||
@@ -48,6 +50,9 @@ export const Sidebar: React.FC = () => {
     },
     { path: ROUTES.CASHIER, icon: ShoppingCart, label: "Kasir" },
     { path: ROUTES.REPORTS, icon: FileText, label: "Laporan" },
+    ...(user?.role === "super_admin"
+      ? [{ path: "/users", icon: Users, label: "Manajemen User" }]
+      : []),
     { path: ROUTES.PROFILE, icon: User, label: "Profile" },
   ];
 

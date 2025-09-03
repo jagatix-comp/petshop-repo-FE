@@ -34,6 +34,33 @@ interface StoreState {
     confirmPassword: string;
   }) => Promise<boolean>;
 
+  // User Management (for super admin)
+  users: User[];
+  isLoadingUsers: boolean;
+  loadUsers: () => Promise<boolean>;
+  createUser: (data: {
+    name: string;
+    username: string;
+    password: string;
+    confirmPassword: string;
+    phoneNumber: string;
+    role: string;
+    tenantID: string;
+  }) => Promise<boolean>;
+  updateUser: (
+    id: string,
+    data: {
+      name: string;
+      username: string;
+      password?: string;
+      confirmPassword?: string;
+      phoneNumber: string;
+      role: string;
+      tenantID: string;
+    }
+  ) => Promise<boolean>;
+  deleteUser: (id: string) => Promise<boolean>;
+
   // Products
   products: Product[];
   isLoadingProducts: boolean;
@@ -477,6 +504,81 @@ export const useStore = create<StoreState>((set, get) => ({
       return false;
     } catch (error) {
       console.error("Error changing password:", error);
+      return false;
+    }
+  },
+
+  // User Management (for super admin)
+  users: [],
+  isLoadingUsers: false,
+
+  loadUsers: async () => {
+    set({ isLoadingUsers: true });
+    try {
+      const response = await apiService.getAllUsers();
+      if (response.status === "success") {
+        const users = response.data.map((userData) => ({
+          id: userData.id,
+          name: userData.name,
+          email: userData.username, // Using username as email for compatibility
+          role: userData.role,
+          username: userData.username,
+          phoneNumber: userData.phoneNumber,
+          tenant: userData.tenant,
+        }));
+        set({ users, isLoadingUsers: false });
+        return true;
+      }
+      set({ isLoadingUsers: false });
+      return false;
+    } catch (error) {
+      console.error("Error loading users:", error);
+      set({ isLoadingUsers: false });
+      return false;
+    }
+  },
+
+  createUser: async (data) => {
+    try {
+      const response = await apiService.createUser(data);
+      if (response.status === "success") {
+        // Reload users after successful creation
+        await get().loadUsers();
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("Error creating user:", error);
+      return false;
+    }
+  },
+
+  updateUser: async (id, data) => {
+    try {
+      const response = await apiService.updateUser(id, data);
+      if (response.status === "success") {
+        // Reload users after successful update
+        await get().loadUsers();
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("Error updating user:", error);
+      return false;
+    }
+  },
+
+  deleteUser: async (id) => {
+    try {
+      const response = await apiService.deleteUser(id);
+      if (response.status === "success") {
+        // Reload users after successful deletion
+        await get().loadUsers();
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("Error deleting user:", error);
       return false;
     }
   },
