@@ -245,7 +245,7 @@ export const Brands: React.FC = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Diupdate
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Aksi
                 </th>
               </tr>
@@ -285,21 +285,19 @@ export const Brands: React.FC = () => {
                         {new Date(brand.updatedAt).toLocaleDateString("id-ID")}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex justify-end space-x-2">
-                        <button
-                          onClick={() => handleEditBrand(brand)}
-                          className="text-teal-600 hover:text-teal-900 p-1"
-                        >
-                          <Edit size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteBrand(brand.id)}
-                          className="text-red-600 hover:text-red-900 p-1"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <button
+                        onClick={() => handleEditBrand(brand)}
+                        className="text-teal-600 hover:text-teal-900 mr-4"
+                      >
+                        <Edit size={16} />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteBrand(brand.id)}
+                        className="text-red-600 hover:text-red-900"
+                      >
+                        <Trash2 size={16} />
+                      </button>
                     </td>
                   </tr>
                 ))
