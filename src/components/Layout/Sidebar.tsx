@@ -13,11 +13,20 @@ import {
   ShoppingCart,
   FileText,
   PawPrint,
+  X,
 } from "lucide-react";
 import { useStore } from "../../store/useStore";
 import { ROUTES } from "../../constants";
 
-export const Sidebar: React.FC = () => {
+interface SidebarProps {
+  onClose?: () => void;
+  isMobile?: boolean;
+}
+
+export const Sidebar: React.FC<SidebarProps> = ({
+  onClose,
+  isMobile = false,
+}) => {
   const logout = useStore((state) => state.logout);
   const user = useStore((state) => state.user);
   const location = useLocation();
@@ -62,17 +71,37 @@ export const Sidebar: React.FC = () => {
     { path: ROUTES.PROFILE, icon: User, label: "Profile" },
   ];
 
+  const handleNavClick = () => {
+    // Close sidebar on mobile when navigation item is clicked
+    if (isMobile && onClose) {
+      onClose();
+    }
+  };
+
   return (
     <div className="bg-white h-screen w-64 shadow-lg flex flex-col">
+      {/* Header */}
       <div className="p-6 border-b border-gray-200">
-        <div className="flex items-center space-x-3">
-          <div className="bg-teal-600 p-2 rounded-lg">
-            <PawPrint className="w-6 h-6 text-white" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="bg-teal-600 p-2 rounded-lg">
+              <PawPrint className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">Pet Shop</h1>
+              <p className="text-sm text-gray-600">Management System</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">Pet Shop</h1>
-            <p className="text-sm text-gray-600">Management System</p>
-          </div>
+
+          {/* Close button for mobile */}
+          {isMobile && (
+            <button
+              onClick={onClose}
+              className="p-2 rounded-lg hover:bg-gray-100 transition-colors lg:hidden"
+            >
+              <X size={20} className="text-gray-600" />
+            </button>
+          )}
         </div>
       </div>
 
@@ -102,6 +131,7 @@ export const Sidebar: React.FC = () => {
                         <li key={child.path}>
                           <NavLink
                             to={child.path}
+                            onClick={handleNavClick}
                             className={({ isActive }) =>
                               `flex items-center space-x-3 px-4 py-2 rounded-lg transition-colors text-sm ${
                                 isActive
@@ -121,6 +151,7 @@ export const Sidebar: React.FC = () => {
               ) : (
                 <NavLink
                   to={item.path}
+                  onClick={handleNavClick}
                   className={({ isActive }) =>
                     `flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
                       isActive

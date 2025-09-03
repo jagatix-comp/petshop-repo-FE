@@ -46,29 +46,31 @@ export const Dashboard: React.FC = () => {
 
   return (
     <Layout>
-      <div className="p-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
+      <div className="space-y-6">
+        <div className="mb-6">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+            Dashboard
+          </h1>
           <p className="text-gray-600">Selamat datang, {user?.username}!</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
           {stats.map((stat, index) => (
             <div
               key={index}
-              className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+              className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow"
             >
               <div className="flex items-center justify-between mb-4">
                 <div
-                  className={`w-12 h-12 ${stat.color} rounded-lg flex items-center justify-center`}
+                  className={`w-10 h-10 sm:w-12 sm:h-12 ${stat.color} rounded-lg flex items-center justify-center`}
                 >
-                  <stat.icon className="w-6 h-6 text-white" />
+                  <stat.icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </div>
               </div>
               <h3 className="text-sm font-medium text-gray-600 mb-2">
                 {stat.title}
               </h3>
-              <p className={`text-2xl font-bold ${stat.textColor}`}>
+              <p className={`text-xl sm:text-2xl font-bold ${stat.textColor}`}>
                 {typeof stat.value === "number" &&
                 stat.title !== "Omset Hari Ini"
                   ? stat.value
@@ -78,8 +80,8 @@ export const Dashboard: React.FC = () => {
           ))}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 sm:gap-8">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
               Produk Stok Menipis
             </h2>
@@ -92,15 +94,18 @@ export const Dashboard: React.FC = () => {
                     key={product.id}
                     className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
                   >
-                    <div>
-                      <p className="font-medium text-gray-900">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-gray-900 truncate">
                         {product.name}
                       </p>
-                      <p className="text-sm text-gray-600">
-                        {product.category}
+                      <p className="text-sm text-gray-600 truncate">
+                        {typeof product.category === "string"
+                          ? product.category
+                          : product.category?.name ||
+                            "Kategori tidak diketahui"}
                       </p>
                     </div>
-                    <span className="text-sm font-medium text-red-600">
+                    <span className="text-sm font-medium text-red-600 ml-2 whitespace-nowrap">
                       Stok: {product.stock}
                     </span>
                   </div>
@@ -113,7 +118,7 @@ export const Dashboard: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
               Transaksi Terbaru
             </h2>
@@ -123,19 +128,21 @@ export const Dashboard: React.FC = () => {
                   key={transaction.id}
                   className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
                 >
-                  <div>
-                    <p className="font-medium text-gray-900">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-gray-900 truncate">
                       #{transaction.id}
                     </p>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-gray-600 truncate">
                       {transaction.cashier}
                     </p>
                   </div>
-                  <div className="text-right">
-                    <p className="font-medium text-green-600">
+                  <div className="text-right ml-2">
+                    <p className="font-medium text-green-600 whitespace-nowrap">
                       {formatCurrency(transaction.total)}
                     </p>
-                    <p className="text-sm text-gray-600">{transaction.date}</p>
+                    <p className="text-sm text-gray-600 whitespace-nowrap">
+                      {transaction.date}
+                    </p>
                   </div>
                 </div>
               ))}

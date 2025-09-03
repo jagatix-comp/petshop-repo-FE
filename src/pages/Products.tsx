@@ -84,15 +84,18 @@ export const Products: React.FC = () => {
 
   return (
     <Layout>
-      <div className="p-8">
-        <div className="flex items-center justify-between mb-8">
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
               Manajemen Produk
             </h1>
             <p className="text-gray-600">Kelola produk pet shop Anda</p>
           </div>
-          <Button onClick={handleAdd} className="flex items-center space-x-2">
+          <Button
+            onClick={handleAdd}
+            className="flex items-center justify-center space-x-2 w-full sm:w-auto"
+          >
             <Plus size={20} />
             <span>Tambah Produk</span>
           </Button>
@@ -112,7 +115,54 @@ export const Products: React.FC = () => {
             </div>
           </div>
 
-          <div className="overflow-x-auto">
+          {/* Mobile Card View */}
+          <div className="block sm:hidden">
+            {isLoadingProducts ? (
+              <div className="p-8 text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600 mx-auto"></div>
+                <p className="mt-2 text-gray-600">Memuat produk...</p>
+              </div>
+            ) : filteredProducts.length === 0 ? (
+              <div className="p-8 text-center text-gray-500">
+                Tidak ada produk yang ditemukan
+              </div>
+            ) : (
+              <div className="divide-y divide-gray-200">
+                {filteredProducts.map((product) => (
+                  <div key={product.id} className="p-4">
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="font-medium text-gray-900 text-sm">
+                        {product.name}
+                      </h3>
+                      <div className="flex space-x-2 ml-2">
+                        <button
+                          onClick={() => handleEdit(product)}
+                          className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                        >
+                          <Edit size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(product.id)}
+                          className="p-1 text-red-600 hover:bg-red-50 rounded"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="space-y-1 text-sm text-gray-600">
+                      <p>Kategori: {product.category?.name || "N/A"}</p>
+                      <p>Brand: {product.brand?.name || "N/A"}</p>
+                      <p>Harga: {formatCurrency(product.price)}</p>
+                      <p>Stok: {product.stock}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="hidden sm:block overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
