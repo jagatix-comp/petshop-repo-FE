@@ -161,7 +161,10 @@ class ApiService {
       console.log("✅ Refresh token response:", result);
 
       if (result.status === "success" && result.data?.accessToken) {
-        localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, result.data.accessToken);
+        localStorage.setItem(
+          STORAGE_KEYS.ACCESS_TOKEN,
+          result.data.accessToken
+        );
         console.log("✅ Token refresh successful, new token saved");
         return result.data.accessToken;
       } else {
@@ -215,7 +218,7 @@ class ApiService {
         try {
           console.log("🔄 Access token expired, attempting refresh...");
           const newToken = await this.refreshTokenIfNeeded();
-          
+
           if (newToken) {
             // Retry the original request with new token
             const retryConfig: RequestInit = {
@@ -608,7 +611,9 @@ class ApiService {
       isRefreshing: this.isRefreshing,
       hasRefreshPromise: !!this.refreshPromise,
       hasAccessToken: !!localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN),
-      accessToken: localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN)?.substring(0, 20) + "...",
+      accessToken:
+        localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN)?.substring(0, 20) +
+        "...",
     });
   }
 }

@@ -14,7 +14,7 @@ export const ROUTES = {
 export const API_ENDPOINTS = {
   AUTH: {
     LOGIN: "/auth/login",
-    REFRESH: "/api/v1/auth/refresh",
+    REFRESH: "/auth/refresh",
     LOGOUT: "/auth/logout",
     ME: "/auth/me",
   },
