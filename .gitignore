@@ -24,11 +24,12 @@ dist-ssr
 *.sw?
 
 # Environment files
+.env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 
-# Keep these for deployment
-.env
-.env.production
+# Keep these for different environments
+# .env.development (for development)
+# .env.example (template)
