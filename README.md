@@ -32,7 +32,14 @@ A modern, responsive Point of Sale (POS) and inventory management system built w
 - Secure API communication
 - Session management
 
-## 🚀 Tech Stack
+## � Documentation
+
+📋 **For detailed documentation, see [`docs/`](./docs/) folder:**
+- [Environment Setup](./docs/ENVIRONMENT-SETUP.md) - Configuration guide
+- [Project Structure](./docs/STRUCTURE.md) - Architecture overview  
+- [Backend Requirements](./docs/backend-requirements.md) - API specifications
+
+## �🚀 Tech Stack
 
 - **Frontend**: React 18, TypeScript, Tailwind CSS
 - **Build Tool**: Vite
