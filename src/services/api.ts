@@ -98,6 +98,9 @@ interface UpdateUserRequest {
 }
 
 class ApiService {
+  private isRefreshing = false;
+  private refreshPromise: Promise<string> | null = null;
+
   private getAuthHeaders() {
     const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
     return {
@@ -105,6 +108,73 @@ class ApiService {
       "x-tenant-name": TENANT_NAME,
       ...(token && { Authorization: `Bearer ${token}` }),
     };
+  }
+
+  private async refreshTokenIfNeeded(): Promise<string | null> {
+    if (this.isRefreshing && this.refreshPromise) {
+      // Jika sedang refresh, tunggu promise yang sudah ada
+      return this.refreshPromise;
+    }
+
+    this.isRefreshing = true;
+    this.refreshPromise = this.performTokenRefresh();
+
+    try {
+      const newToken = await this.refreshPromise;
+      this.isRefreshing = false;
+      this.refreshPromise = null;
+      return newToken;
+    } catch (error) {
+      this.isRefreshing = false;
+      this.refreshPromise = null;
+      throw error;
+    }
+  }
+
+  private async performTokenRefresh(): Promise<string> {
+    console.log("🔄 Attempting to refresh token...");
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}${API_ENDPOINTS.AUTH.REFRESH}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-tenant-name": TENANT_NAME,
+            // Tidak mengirim Authorization header karena backend ambil dari cookie
+          },
+          credentials: "include", // Penting untuk mengirim HTTP-only cookie
+        }
+      );
+
+      console.log("📡 Refresh Token Response:", {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Refresh failed: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      console.log("✅ Refresh token response:", result);
+
+      if (result.status === "success" && result.data?.accessToken) {
+        localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, result.data.accessToken);
+        console.log("✅ Token refresh successful, new token saved");
+        return result.data.accessToken;
+      } else {
+        throw new Error("Invalid refresh response format");
+      }
+    } catch (error) {
+      console.error("❌ Refresh token failed:", error);
+      // Clear tokens dan redirect ke login
+      localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+      localStorage.removeItem(STORAGE_KEYS.USER);
+      window.location.href = "/login";
+      throw error;
+    }
   }
 
   private async request<T>(
@@ -138,24 +208,22 @@ class ApiService {
     if (!response.ok) {
       if (
         response.status === 401 &&
-        endpoint !== "/auth/refresh" &&
-        endpoint !== "/auth/login"
+        endpoint !== API_ENDPOINTS.AUTH.REFRESH &&
+        endpoint !== API_ENDPOINTS.AUTH.LOGIN
       ) {
         // Try to refresh token
         try {
           console.log("🔄 Access token expired, attempting refresh...");
-          const refreshResponse = await this.refreshToken();
-          if (refreshResponse.status === "success") {
-            console.log("✅ Token refresh successful");
-            localStorage.setItem(
-              STORAGE_KEYS.ACCESS_TOKEN,
-              refreshResponse.data.accessToken
-            );
-
+          const newToken = await this.refreshTokenIfNeeded();
+          
+          if (newToken) {
             // Retry the original request with new token
             const retryConfig: RequestInit = {
               ...config,
-              headers: this.getAuthHeaders(),
+              headers: {
+                ...this.getAuthHeaders(),
+                Authorization: `Bearer ${newToken}`,
+              },
             };
             console.log("🔄 Retrying original request with new token...");
             const retryResponse = await fetch(url, retryConfig);
@@ -164,20 +232,14 @@ class ApiService {
               return retryResponse.json();
             } else {
               console.error("❌ Retry request failed:", retryResponse.status);
+              throw new Error(`Retry failed: ${retryResponse.statusText}`);
             }
-          } else {
-            console.error("❌ Token refresh failed - invalid response");
           }
         } catch (refreshError) {
           console.error("❌ Token refresh failed with error:", refreshError);
+          // Error handling sudah dilakukan di performTokenRefresh()
+          return Promise.reject(new Error("Authentication failed"));
         }
-
-        // If refresh fails, redirect to login
-        console.log("🚪 Redirecting to login due to auth failure");
-        localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-        localStorage.removeItem(STORAGE_KEYS.USER);
-        window.location.href = "/login";
-        return Promise.reject(new Error("Authentication failed"));
       }
 
       // Log error details
@@ -220,37 +282,19 @@ class ApiService {
   }
 
   async refreshToken(): Promise<RefreshTokenResponse> {
-    console.log("🔄 Attempting to refresh token...");
+    console.log("🔄 Manual refresh token call...");
     try {
-      // No need to send access token - backend will get refresh token from HTTP-only cookie
-      const response = await fetch(
-        `${API_BASE_URL}${API_ENDPOINTS.AUTH.REFRESH}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-tenant-name": TENANT_NAME,
-            // No Authorization header needed for refresh endpoint
-          },
-          credentials: "include", // Include cookies to send refresh token
-        }
-      );
-
-      console.log("📡 Refresh Token Response:", {
-        status: response.status,
-        statusText: response.statusText,
-        ok: response.ok,
-      });
-
-      if (!response.ok) {
-        throw new Error(`Refresh failed: ${response.statusText}`);
-      }
-
-      const result = await response.json();
-      console.log("✅ Refresh token response:", result.status);
-      return result;
+      // Gunakan method yang sama seperti performTokenRefresh untuk konsistensi
+      const newToken = await this.performTokenRefresh();
+      return {
+        status: "success",
+        message: "Token refreshed successfully",
+        data: {
+          accessToken: newToken,
+        },
+      };
     } catch (error) {
-      console.error("❌ Refresh token failed:", error);
+      console.error("❌ Manual refresh token failed:", error);
       throw error;
     }
   }
@@ -555,6 +599,16 @@ class ApiService {
     return this.request<{ status: string; message: string }>(`/users/${id}`, {
       method: "DELETE",
       headers: this.getAuthHeaders(),
+    });
+  }
+
+  // Debug helper method
+  debugRefreshToken() {
+    console.log("🔍 Refresh Token Debug Info:", {
+      isRefreshing: this.isRefreshing,
+      hasRefreshPromise: !!this.refreshPromise,
+      hasAccessToken: !!localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN),
+      accessToken: localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN)?.substring(0, 20) + "...",
     });
   }
 }
