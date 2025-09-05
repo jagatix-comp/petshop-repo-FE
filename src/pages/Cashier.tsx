@@ -39,7 +39,7 @@ export const Cashier: React.FC = () => {
   const [processingPrint, setProcessingPrint] = useState(false);
   const [lastTransaction, setLastTransaction] = useState<any>(null);
   const [paymentMethod, setPaymentMethod] = useState<
-    "cash" | "credit_card" | "debit_card"
+    "cash" | "credit_card" | "debit_card" | "qris"
   >("cash");
   const { toast } = useToast();
 
@@ -394,11 +394,13 @@ export const Cashier: React.FC = () => {
                                 | "cash"
                                 | "credit_card"
                                 | "debit_card"
+                                | "qris"
                             )
                           }
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm"
                         >
                           <option value="cash">Cash</option>
+                          <option value="qris">Qris</option>
                           <option value="credit_card">Credit Card</option>
                           <option value="debit_card">Debit Card</option>
                         </select>
