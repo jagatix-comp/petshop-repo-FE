@@ -35,6 +35,7 @@ export const Cashier: React.FC = () => {
     updateCartItemQuantity,
     clearCart,
     addTransaction,
+    loadProducts,
   } = useStore();
   const [filteredProducts, setFilteredProducts] = useState(products);
   const [searchTerm, setSearchTerm] = useState("");
@@ -137,6 +138,9 @@ export const Cashier: React.FC = () => {
       // Update local store (for compatibility with existing components)
       addTransaction(cart, total);
 
+      // Refresh products to get updated stock from server
+      await loadProducts();
+
       setLastTransaction(createdTransaction);
       setReceiptOpen(true);
       clearCart();
@@ -191,6 +195,12 @@ export const Cashier: React.FC = () => {
     } finally {
       setProcessingPrint(false);
     }
+  };
+
+  const handleCloseReceipt = async () => {
+    setReceiptOpen(false);
+    // Refresh products to ensure stock is up to date
+    await loadProducts();
   };
 
   return (
@@ -456,7 +466,7 @@ export const Cashier: React.FC = () => {
         {/* Receipt Modal */}
         <Modal
           isOpen={receiptOpen}
-          onClose={() => !processingPrint && setReceiptOpen(false)}
+          onClose={() => !processingPrint && handleCloseReceipt()}
           title="Nota Transaksi - Berhasil"
         >
           {lastTransaction && (
@@ -549,7 +559,7 @@ export const Cashier: React.FC = () => {
 
                 <Button
                   variant="secondary"
-                  onClick={() => setReceiptOpen(false)}
+                  onClick={() => handleCloseReceipt()}
                   disabled={processingPrint}
                   className="flex-1 flex items-center justify-center"
                 >
