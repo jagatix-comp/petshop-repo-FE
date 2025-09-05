@@ -189,30 +189,6 @@ export const Cashier: React.FC = () => {
     }
   };
 
-  const handleTestPrint = async () => {
-    try {
-      const success = await thermalPrinter.printTest();
-      if (success) {
-        toast({
-          title: "Test Print Berhasil",
-          description: "Printer berfungsi dengan baik",
-        });
-      } else {
-        toast({
-          title: "Test Print Gagal",
-          description: "Periksa koneksi printer",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Test Print Error",
-        description: "Gagal melakukan test print",
-        variant: "destructive",
-      });
-    }
-  };
-
   return (
     <Layout
       pageTitle="Kasir"
@@ -428,31 +404,20 @@ export const Cashier: React.FC = () => {
                         </select>
                       </div>
 
-                      <div className="flex gap-2">
-                        <Button
-                          variant="secondary"
-                          onClick={handleTestPrint}
-                          className="flex-1 flex items-center justify-center gap-2"
-                        >
-                          <Printer className="h-4 w-4" />
-                          <span>Test Print</span>
-                        </Button>
-
-                        <Button
-                          className="flex-2 bg-teal-600 hover:bg-teal-700 text-white font-medium py-3 flex items-center justify-center gap-2"
-                          onClick={handleCheckout}
-                          disabled={processingCheckout}
-                        >
-                          {processingCheckout ? (
-                            <span>Memproses...</span>
-                          ) : (
-                            <>
-                              <Receipt className="h-4 w-4" />
-                              <span>Checkout</span>
-                            </>
-                          )}
-                        </Button>
-                      </div>
+                      <Button
+                        className="w-full bg-teal-600 hover:bg-teal-700 text-white font-medium py-3 flex items-center justify-center gap-2"
+                        onClick={handleCheckout}
+                        disabled={processingCheckout}
+                      >
+                        {processingCheckout ? (
+                          <span>Memproses...</span>
+                        ) : (
+                          <>
+                            <Receipt className="h-4 w-4" />
+                            <span>Checkout</span>
+                          </>
+                        )}
+                      </Button>
                     </div>
                   </div>
                 )}
