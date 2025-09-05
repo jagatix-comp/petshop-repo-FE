@@ -236,6 +236,7 @@ export class ThermalPrinter {
       await this.sendText("Atas Kunjungan Anda\n");
       await this.sendText("Barang yang sudah dibeli\n");
       await this.sendText("tidak dapat dikembalikan\n");
+      await this.sendText("Jagatix.comp\n");
 
       // Feed paper and cut
       await this.sendCommand(this.COMMANDS.FEED_PAPER);
