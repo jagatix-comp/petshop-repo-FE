@@ -118,11 +118,46 @@ export class ThermalPrinter {
       throw new Error("Printer not connected");
     }
 
-    const writer = this.printer.writable.getWriter();
+    let writer: any = null;
     try {
+      // Check if printer port is still readable/writable
+      if (!this.printer.readable || !this.printer.writable) {
+        console.warn("🔌 Printer port not accessible, attempting reconnect...");
+        this.isConnected = false;
+        await this.connect();
+        if (!this.isConnected) {
+          throw new Error("Failed to reconnect to printer");
+        }
+      }
+
+      writer = this.printer.writable.getWriter();
       await writer.write(new TextEncoder().encode(command));
+    } catch (error) {
+      console.error("❌ Send command error:", error);
+
+      // If network error or connection lost, mark as disconnected
+      if (
+        error instanceof Error &&
+        (error.message.includes("NetworkError") ||
+          error.message.includes("not open") ||
+          error.message.includes("invalid state"))
+      ) {
+        console.warn("🔌 Connection lost, marking printer as disconnected");
+        this.isConnected = false;
+      }
+
+      throw error;
     } finally {
-      writer.releaseLock();
+      if (writer) {
+        try {
+          writer.releaseLock();
+        } catch (releaseError) {
+          console.warn(
+            "⚠️ Warning: Could not release writer lock:",
+            releaseError
+          );
+        }
+      }
     }
   }
 
@@ -151,13 +186,33 @@ export class ThermalPrinter {
   }
 
   async printReceipt(receiptData: ReceiptData): Promise<boolean> {
+    console.log("🖨️ Starting print receipt process...");
+    console.log("📊 Connection status:", {
+      isConnected: this.isConnected,
+      hasPrinter: !!this.printer,
+      isReady: this.isReady(),
+    });
+
     try {
       if (!this.isConnected) {
+        console.log("🔌 Printer not connected, attempting connection...");
         const connected = await this.connect();
         if (!connected) {
           throw new Error("Failed to connect to printer");
         }
       }
+
+      // Verify connection is still valid
+      if (this.printer && (!this.printer.readable || !this.printer.writable)) {
+        console.warn("🔌 Printer connection invalid, reconnecting...");
+        this.isConnected = false;
+        const connected = await this.connect();
+        if (!connected) {
+          throw new Error("Failed to reconnect to printer");
+        }
+      }
+
+      console.log("🎯 Sending print commands...");
 
       // Initialize printer
       await this.sendCommand(this.COMMANDS.INIT);
@@ -246,6 +301,22 @@ export class ThermalPrinter {
       return true;
     } catch (error) {
       console.error("❌ Failed to print receipt:", error);
+
+      // If connection error occurred, reset connection state
+      if (
+        error instanceof Error &&
+        (error.message.includes("NetworkError") ||
+          error.message.includes("not connected") ||
+          error.message.includes("not open") ||
+          error.message.includes("invalid state"))
+      ) {
+        console.warn(
+          "🔌 Connection error detected, resetting connection state"
+        );
+        this.isConnected = false;
+        this.printer = null;
+      }
+
       throw error;
     }
   }
@@ -281,7 +352,30 @@ export class ThermalPrinter {
   }
 
   isReady(): boolean {
-    return this.isConnected && this.printer !== null;
+    return (
+      this.isConnected &&
+      this.printer !== null &&
+      this.printer.readable &&
+      this.printer.writable
+    );
+  }
+
+  // Method to reset connection state
+  resetConnection(): void {
+    console.log("🔄 Resetting connection state");
+    this.isConnected = false;
+    this.printer = null;
+  }
+
+  // Get connection status for debugging
+  getConnectionStatus() {
+    return {
+      isConnected: this.isConnected,
+      hasPrinter: !!this.printer,
+      isReady: this.isReady(),
+      printerReadable: this.printer ? !!this.printer.readable : false,
+      printerWritable: this.printer ? !!this.printer.writable : false,
+    };
   }
 }
 

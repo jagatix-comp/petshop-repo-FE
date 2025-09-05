@@ -103,7 +103,7 @@ interface StoreState {
 
   // Transactions
   transactions: Transaction[];
-  addTransaction: (items: CartItem[], total: number) => void;
+  addTransaction: (items: CartItem[], total: number) => Promise<void>;
 
   // Cart
   cart: CartItem[];
@@ -416,7 +416,7 @@ export const useStore = create<StoreState>((set, get) => ({
 
   // Transactions
   transactions: [],
-  addTransaction: (items, total) => {
+  addTransaction: async (items, total) => {
     const newTransaction: Transaction = {
       id: Date.now().toString(),
       date: new Date().toISOString().split("T")[0],
@@ -425,15 +425,9 @@ export const useStore = create<StoreState>((set, get) => ({
       cashier: get().user?.name || "Unknown",
     };
 
-    // Update stock
-    items.forEach((item) => {
-      const product = get().products.find((p) => p.id === item.product.id);
-      if (product) {
-        get().updateProduct(item.product.id, {
-          stock: product.stock - item.quantity,
-        });
-      }
-    });
+    // Don't update stock here - it should be handled by the API
+    // The server will handle stock updates when creating transaction
+    console.log("� Adding transaction to local store:", newTransaction.id);
 
     set((state) => ({
       transactions: [newTransaction, ...state.transactions],

@@ -362,12 +362,24 @@ class ApiService {
     id: string,
     productData: UpdateProductRequest
   ): Promise<ProductResponse> {
-    console.log("🔄 Updating product:", { id, productData });
+    console.log("🔄 API: Updating product:", { id, productData });
 
-    return this.request<ProductResponse>(API_ENDPOINTS.PRODUCTS.UPDATE(id), {
-      method: "PUT",
-      body: JSON.stringify(productData),
-    });
+    try {
+      const response = await this.request<ProductResponse>(
+        API_ENDPOINTS.PRODUCTS.UPDATE(id),
+        {
+          method: "PUT",
+          body: JSON.stringify(productData),
+        }
+      );
+
+      console.log("✅ API: Product update successful:", response);
+      return response;
+    } catch (error) {
+      console.error("❌ API: Product update failed:", error);
+      console.error("Request data:", { id, productData });
+      throw error;
+    }
   }
 
   async deleteProduct(id: string): Promise<ProductResponse> {

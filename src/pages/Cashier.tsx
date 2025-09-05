@@ -192,9 +192,14 @@ export const Cashier: React.FC = () => {
         return;
       }
 
+      console.log("🔌 Checking printer connection...");
+      console.log("📊 Printer status:", thermalPrinter.getConnectionStatus());
+
       if (!thermalPrinter.isReady()) {
+        console.log("🔄 Printer not ready, attempting connection...");
         const connected = await thermalPrinter.connect();
         if (!connected) {
+          console.error("❌ Failed to connect to printer");
           toast({
             title: "Printer Error",
             description:
@@ -203,19 +208,31 @@ export const Cashier: React.FC = () => {
           });
           return;
         }
+        console.log("✅ Printer connected successfully");
+      } else {
+        console.log("✅ Printer already ready");
       }
 
+      console.log("🖨️ Starting print job...");
       await thermalPrinter.printReceipt(transactionData);
+      console.log("✅ Print job completed successfully");
 
       toast({
         title: "Print Berhasil",
         description: "Nota berhasil dicetak",
       });
     } catch (error) {
-      console.error("Print error:", error);
+      console.error("❌ Print error details:", error);
+      console.log(
+        "📊 Printer status after error:",
+        thermalPrinter.getConnectionStatus()
+      );
 
       let errorMessage = "Gagal mencetak nota. Periksa koneksi printer.";
       if (error instanceof Error) {
+        console.log("🔍 Error type:", error.name);
+        console.log("🔍 Error message:", error.message);
+
         if (error.message.includes("No port selected")) {
           errorMessage =
             "Printer tidak dipilih. Silakan pilih port printer yang benar.";
@@ -225,6 +242,18 @@ export const Cashier: React.FC = () => {
         } else if (error.message.includes("not connected")) {
           errorMessage =
             "Printer tidak terhubung. Pastikan kabel USB terpasang dengan baik.";
+        } else if (error.message.includes("NetworkError")) {
+          errorMessage =
+            "Koneksi printer terputus. Periksa kabel USB dan restart printer.";
+          // Reset connection state for network errors
+          thermalPrinter.resetConnection();
+        } else if (
+          error.message.includes("invalid state") ||
+          error.message.includes("not open")
+        ) {
+          errorMessage =
+            "Status printer tidak valid. Coba disconnect dan connect ulang printer.";
+          thermalPrinter.resetConnection();
         }
       }
 
