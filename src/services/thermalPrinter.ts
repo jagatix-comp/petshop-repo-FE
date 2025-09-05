@@ -179,24 +179,24 @@ export class ThermalPrinter {
       await this.sendCommand(this.COMMANDS.ALIGN_LEFT);
       await this.sendText("=".repeat(32) + "\n");
 
-      // Transaction info
-      //   const date = new Date(receiptData.created_at).toLocaleString("id-ID");
-      //   await this.sendText(`Tanggal: ${date}\n`);
-      //   await this.sendText(`ID Trans: ${receiptData.id.substring(0, 16)}\n`);
-      //   await this.sendText(`Kasir   : ${receiptData.user.name}\n`);
-      //   await this.sendText(
-      //     `Pembayaran: ${receiptData.PaymentMethod.replace(
-      //       "_",
-      //       " "
-      //     ).toUpperCase()}\n`
-      //   );
+      //Transaction info
+      const date = new Date(receiptData.created_at).toLocaleString("id-ID");
+      await this.sendText(`Tanggal: ${date}\n`);
+      await this.sendText(`ID Trans: ${receiptData.id.substring(0, 16)}\n`);
+      await this.sendText(`Kasir   : ${receiptData.user.name}\n`);
+      await this.sendText(
+        `Pembayaran: ${receiptData.PaymentMethod.replace(
+          "_",
+          " "
+        ).toUpperCase()}\n`
+      );
 
-      //   // Separator
-      //   await this.sendText("-".repeat(32) + "\n");
+      // Separator
+      await this.sendText("-".repeat(32) + "\n");
 
-      //   // Products header
-      //   await this.sendText("ITEM\n");
-      //   await this.sendText("-".repeat(32) + "\n");
+      // Products header
+      await this.sendText("ITEM\n");
+      await this.sendText("-".repeat(32) + "\n");
 
       // Products
       let subtotal = 0;
