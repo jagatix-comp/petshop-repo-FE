@@ -24,7 +24,7 @@ export default defineConfig(({ command, mode }) => {
         mode === "development"
           ? {
               "/api": {
-                target: "http://103.54.170.35:8002/api/v1",
+                target: "http://103.54.170.35:8001/api/v1",
                 changeOrigin: true,
                 rewrite: (path) => path.replace(/^\/api/, ""),
                 secure: false,

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -18,44 +18,42 @@ import { useStore } from "./store/useStore";
 import { useAuth } from "./hooks/useAuth";
 import { ROUTES } from "./constants";
 
-const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
-  const isAuthenticated = useStore((state) => state.isAuthenticated);
+// Move ProtectedRoute to separate file to avoid confusion
+interface ProtectedRouteProps {
+  children: React.ReactNode;
+}
 
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+  const { isAuthenticated, user } = useStore();
+
+  // Simple check without additional loading state
+  if (!isAuthenticated || !user) {
+    return <Navigate to={ROUTES.LOGIN} replace />;
+  }
+
+  return <>{children}</>;
 };
 
 function App() {
-  const {
-    isAuthenticated,
-    initializeAuth,
-    loadProducts,
-    loadBrands,
-    loadCategories,
-  } = useStore();
+  const { isAuthenticated } = useStore();
 
-  // Initialize auth hook for automatic token refresh
+  // Only use the existing useAuth hook - remove duplicate logic
   useAuth();
-
-  useEffect(() => {
-    // Initialize authentication state from localStorage
-    initializeAuth();
-  }, [initializeAuth]);
-
-  useEffect(() => {
-    // Load initial data when authenticated
-    if (isAuthenticated) {
-      loadProducts();
-      loadBrands();
-      loadCategories();
-    }
-  }, [isAuthenticated, loadProducts, loadBrands, loadCategories]);
 
   return (
     <Router>
       <Routes>
-        <Route path={ROUTES.LOGIN} element={<Login />} />
+        <Route
+          path={ROUTES.LOGIN}
+          element={
+            isAuthenticated ? (
+              <Navigate to={ROUTES.DASHBOARD} replace />
+            ) : (
+              <Login />
+            )
+          }
+        />
+
         <Route
           path={ROUTES.DASHBOARD}
           element={
@@ -130,6 +128,9 @@ function App() {
             />
           }
         />
+
+        {/* Catch all other routes */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );

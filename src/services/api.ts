@@ -16,6 +16,7 @@ interface LoginResponse {
   message: string;
   data: {
     accessToken: string;
+    refreshToken: string; // Add refreshToken to response
   };
 }
 
@@ -112,8 +113,13 @@ class ApiService {
 
   private async refreshTokenIfNeeded(): Promise<string | null> {
     if (this.isRefreshing && this.refreshPromise) {
-      // Jika sedang refresh, tunggu promise yang sudah ada
-      return this.refreshPromise;
+      try {
+        return await this.refreshPromise;
+      } catch (error) {
+        this.isRefreshing = false;
+        this.refreshPromise = null;
+        throw error;
+      }
     }
 
     this.isRefreshing = true;
@@ -134,6 +140,13 @@ class ApiService {
   private async performTokenRefresh(): Promise<string> {
     console.log("🔄 Attempting to refresh token...");
     try {
+      const refreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
+
+      if (!refreshToken) {
+        console.log("❌ No refresh token found");
+        throw new Error("No refresh token available");
+      }
+
       const response = await fetch(
         `${API_BASE_URL}${API_ENDPOINTS.AUTH.REFRESH}`,
         {
@@ -141,9 +154,9 @@ class ApiService {
           headers: {
             "Content-Type": "application/json",
             "x-tenant-name": TENANT_NAME,
-            // Tidak mengirim Authorization header karena backend ambil dari cookie
           },
-          credentials: "include", // Penting untuk mengirim HTTP-only cookie
+          credentials: "include",
+          body: JSON.stringify({ refreshToken }), // Send refreshToken in body
         }
       );
 
@@ -172,10 +185,17 @@ class ApiService {
       }
     } catch (error) {
       console.error("❌ Refresh token failed:", error);
-      // Clear tokens dan redirect ke login
+      // Clear all tokens and force logout
       localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+      localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
       localStorage.removeItem(STORAGE_KEYS.USER);
-      window.location.href = "/login";
+
+      setTimeout(() => {
+        if (window.location.pathname !== "/login") {
+          window.location.href = "/login";
+        }
+      }, 100);
+
       throw error;
     }
   }
@@ -272,11 +292,33 @@ class ApiService {
     console.log("🚀 Login attempt:", { url, username, tenant: TENANT_NAME });
 
     try {
-      return await this.request<LoginResponse>(endpoint, {
+      const response = await fetch(url, {
         method: "POST",
-        credentials: "include", // Include cookies to receive refresh token
+        headers: {
+          "Content-Type": "application/json",
+          "x-tenant-name": TENANT_NAME,
+        },
+        credentials: "include",
         body: JSON.stringify({ username, password }),
       });
+
+      if (!response.ok) {
+        throw new Error(`Login failed: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      console.log("✅ Login response:", result);
+
+      // Note: Based on your API docs, login only returns accessToken
+      // The refreshToken is sent as HTTP-only cookie, not in response
+      return {
+        status: result.status,
+        message: result.message,
+        data: {
+          accessToken: result.data.accessToken,
+          refreshToken: "", // Empty since it's in cookie
+        },
+      };
     } catch (error) {
       console.error("❌ Login failed:", error);
       console.error("🔍 URL tried:", url);
@@ -287,7 +329,6 @@ class ApiService {
   async refreshToken(): Promise<RefreshTokenResponse> {
     console.log("🔄 Manual refresh token call...");
     try {
-      // Gunakan method yang sama seperti performTokenRefresh untuk konsistensi
       const newToken = await this.performTokenRefresh();
       return {
         status: "success",
@@ -304,19 +345,31 @@ class ApiService {
 
   async logout() {
     try {
-      // Call logout endpoint to clear HTTP-only refresh token cookie
-      await this.request(API_ENDPOINTS.AUTH.LOGOUT, {
-        method: "POST",
-        credentials: "include", // Include cookies to clear refresh token
-      });
+      const response = await fetch(
+        `${API_BASE_URL}${API_ENDPOINTS.AUTH.LOGOUT}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-tenant-name": TENANT_NAME,
+          },
+          credentials: "include",
+        }
+      );
+
+      console.log("🚪 Logout API response:", response.status);
     } catch (error) {
       console.error("❌ Logout API call failed:", error);
-      // Continue with local cleanup even if API call fails
     }
 
     // Clear local storage
     localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+    localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
     localStorage.removeItem(STORAGE_KEYS.USER);
+
+    // Reset refresh state
+    this.isRefreshing = false;
+    this.refreshPromise = null;
   }
 
   async getCurrentUser() {

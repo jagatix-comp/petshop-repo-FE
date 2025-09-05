@@ -54,7 +54,7 @@ export const API_ENDPOINTS = {
 export const STORAGE_KEYS = {
   ACCESS_TOKEN: "accessToken",
   USER: "user",
-  REFRESH_TOKEN: "refreshToken",
+  REFRESH_TOKEN: "refreshToken", // Add refresh token key
 } as const;
 
 // HTTP Status Codes

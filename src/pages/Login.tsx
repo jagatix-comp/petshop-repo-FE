@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { PawPrint, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { useStore } from "../store/useStore";
-import { getStoredUser } from "../utils/auth";
 import { Button } from "../components/ui/Button";
 
 export const Login: React.FC = () => {
@@ -14,18 +13,10 @@ export const Login: React.FC = () => {
   const navigate = useNavigate();
   const { login, isAuthenticated } = useStore();
 
-  useEffect(() => {
-    // Check if user is already logged in
-    const storedUser = getStoredUser();
-    if (storedUser) {
-      useStore.setState({ user: storedUser, isAuthenticated: true });
-      navigate("/dashboard");
-    }
-  }, [navigate]);
-
+  // Simple redirect check
   useEffect(() => {
     if (isAuthenticated) {
-      navigate("/dashboard");
+      navigate("/dashboard", { replace: true });
     }
   }, [isAuthenticated, navigate]);
 
@@ -35,13 +26,18 @@ export const Login: React.FC = () => {
     setIsLoading(true);
 
     try {
+      console.log("🚀 Login: Attempting login for user:", username);
       const success = await login(username, password);
+
       if (success) {
-        navigate("/dashboard");
+        console.log("✅ Login: Login successful");
+        // Don't manually navigate, let the useEffect handle it
       } else {
+        console.log("❌ Login: Login failed");
         setError("Username atau password salah");
       }
     } catch (error) {
+      console.error("❌ Login: Login error:", error);
       setError("Terjadi kesalahan saat login");
     } finally {
       setIsLoading(false);
@@ -76,9 +72,10 @@ export const Login: React.FC = () => {
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg  focus:outline-none focus:ring-teal-500 focus:border-teal-500"
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-teal-500 focus:border-teal-500"
                 placeholder="adit"
                 required
+                disabled={isLoading}
               />
             </div>
           </div>
@@ -100,11 +97,13 @@ export const Login: React.FC = () => {
                 className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-teal-500 focus:border-teal-500"
                 placeholder="password"
                 required
+                disabled={isLoading}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+                disabled={isLoading}
               >
                 {showPassword ? (
                   <EyeOff className="w-5 h-5" />

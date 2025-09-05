@@ -122,35 +122,38 @@ export const useStore = create<StoreState>((set, get) => ({
       const response = await apiService.login(username, password);
 
       if (response.status === "success") {
-        // Save access token first
+        // Save access token
         localStorage.setItem(
           STORAGE_KEYS.ACCESS_TOKEN,
           response.data.accessToken
         );
 
-        // Load actual profile data from API
+        // Don't try to load profile immediately - let the auth initialization handle it
+        console.log("✅ Store: Login successful, loading profile...");
+
+        // Load profile data from API
         const profileLoaded = await get().loadProfile();
 
         if (profileLoaded) {
           set({ isAuthenticated: true });
           return true;
         } else {
-          // Fallback: create user object from login data
-          const user = {
-            id: "1",
-            name: username,
-            email: username,
-            role: "admin",
-          };
-
-          localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
-          set({ user, isAuthenticated: true });
-          return true;
+          // If profile loading fails, clear everything
+          localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+          localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+          localStorage.removeItem(STORAGE_KEYS.USER);
+          set({ user: null, isAuthenticated: false });
+          return false;
         }
       }
       return false;
     } catch (error) {
       console.error("Login error:", error);
+      // Clear any stored data on login error
+      localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+      localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+      localStorage.removeItem(STORAGE_KEYS.USER);
+      set({ user: null, isAuthenticated: false });
       return false;
     }
   },
@@ -179,18 +182,29 @@ export const useStore = create<StoreState>((set, get) => ({
       return false;
     }
   },
-  logout: async () => {
+  logout: () => {
     try {
-      // Call API logout to clear HTTP-only refresh token cookie
-      await apiService.logout();
+      apiService.logout().catch(console.error);
     } catch (error) {
       console.error("❌ Store: Logout API call failed:", error);
-      // Continue with local cleanup even if API call fails
     }
 
-    // Clear local state
-    set({ user: null, isAuthenticated: false });
+    // Clear local state immediately
+    localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+    localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+    localStorage.removeItem(STORAGE_KEYS.USER);
+    set({
+      user: null,
+      isAuthenticated: false,
+      products: [],
+      brands: [],
+      categories: [],
+      transactions: [],
+      cart: [],
+      users: [],
+    });
   },
+
   initializeAuth: () => {
     try {
       const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
@@ -200,13 +214,17 @@ export const useStore = create<StoreState>((set, get) => ({
         const user = JSON.parse(userData);
         set({ user, isAuthenticated: true });
 
-        // Load fresh profile data from API in background
-        get().loadProfile().catch(console.error);
+        // Don't load fresh profile data immediately to avoid race conditions
+        // Let the components that need fresh data load it explicitly
+      } else {
+        // If no valid auth data, ensure we're logged out
+        set({ user: null, isAuthenticated: false });
       }
     } catch (error) {
       console.error("Failed to initialize auth:", error);
       localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
       localStorage.removeItem(STORAGE_KEYS.USER);
+      set({ user: null, isAuthenticated: false });
     }
   },
 
