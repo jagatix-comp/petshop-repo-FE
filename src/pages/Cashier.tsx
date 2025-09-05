@@ -136,7 +136,7 @@ export const Cashier: React.FC = () => {
       const createdTransaction = await transactionApi.create(transactionData);
 
       // Update local store (for compatibility with existing components)
-      addTransaction(cart, total);
+      await addTransaction(cart, total);
 
       // Refresh products to get updated stock from server
       await loadProducts();
@@ -166,13 +166,39 @@ export const Cashier: React.FC = () => {
   const handlePrintReceipt = async (transactionData: any) => {
     setProcessingPrint(true);
     try {
+      // Check Web Serial API support first
+      if (!("serial" in navigator)) {
+        toast({
+          title: "Browser Tidak Didukung",
+          description:
+            "Web Serial API tidak didukung di browser ini. Gunakan Chrome/Edge versi terbaru.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Check secure context
+      if (!window.isSecureContext) {
+        const isLocalhost =
+          window.location.hostname === "localhost" ||
+          window.location.hostname === "127.0.0.1";
+        toast({
+          title: "Koneksi Tidak Aman",
+          description: isLocalhost
+            ? "Thermal printer memerlukan HTTPS atau localhost dengan port SSL. Coba gunakan https://localhost:5173"
+            : "Thermal printer memerlukan koneksi HTTPS untuk keamanan.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       if (!thermalPrinter.isReady()) {
         const connected = await thermalPrinter.connect();
         if (!connected) {
           toast({
             title: "Printer Error",
             description:
-              "Gagal terhubung ke printer. Pastikan printer terhubung dan driver sudah terinstall.",
+              "Gagal terhubung ke printer. Pastikan printer terhubung dan pilih port yang benar.",
             variant: "destructive",
           });
           return;
@@ -187,9 +213,24 @@ export const Cashier: React.FC = () => {
       });
     } catch (error) {
       console.error("Print error:", error);
+
+      let errorMessage = "Gagal mencetak nota. Periksa koneksi printer.";
+      if (error instanceof Error) {
+        if (error.message.includes("No port selected")) {
+          errorMessage =
+            "Printer tidak dipilih. Silakan pilih port printer yang benar.";
+        } else if (error.message.includes("Access denied")) {
+          errorMessage =
+            "Akses ke printer ditolak. Berikan izin untuk menggunakan printer.";
+        } else if (error.message.includes("not connected")) {
+          errorMessage =
+            "Printer tidak terhubung. Pastikan kabel USB terpasang dengan baik.";
+        }
+      }
+
       toast({
         title: "Print Error",
-        description: "Gagal mencetak nota. Periksa koneksi printer.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
