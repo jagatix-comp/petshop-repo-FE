@@ -9,6 +9,10 @@ import {
   ShoppingCart,
   Printer,
   CheckCircle,
+  ChevronDown,
+  CreditCard,
+  Banknote,
+  Smartphone,
 } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
@@ -386,24 +390,45 @@ export const Cashier: React.FC = () => {
                         <label className="text-sm font-medium text-gray-700">
                           Metode Pembayaran:
                         </label>
-                        <select
-                          value={paymentMethod}
-                          onChange={(e) =>
-                            setPaymentMethod(
-                              e.target.value as
-                                | "cash"
-                                | "credit_card"
-                                | "debit_card"
-                                | "qris"
-                            )
-                          }
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm"
-                        >
-                          <option value="cash">Cash</option>
-                          <option value="qris">Qris</option>
-                          <option value="credit_card">Credit Card</option>
-                          <option value="debit_card">Debit Card</option>
-                        </select>
+                        <div className="relative group">
+                          <select
+                            value={paymentMethod}
+                            onChange={(e) =>
+                              setPaymentMethod(
+                                e.target.value as
+                                  | "cash"
+                                  | "credit_card"
+                                  | "debit_card"
+                                  | "qris"
+                              )
+                            }
+                            className="w-full pl-12 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 hover:border-gray-400 hover:shadow-md focus:shadow-lg cursor-pointer appearance-none bg-white text-sm font-medium transition-all duration-200 ease-in-out"
+                          >
+                            <option value="cash">Cash</option>
+                            <option value="qris">QRIS</option>
+                            <option value="credit_card">Credit Card</option>
+                            <option value="debit_card">Debit Card</option>
+                          </select>
+
+                          {/* Payment Method Icon */}
+                          <div className="absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none transition-colors duration-200">
+                            {paymentMethod === "cash" && (
+                              <Banknote className="h-5 w-5 text-teal-500 group-hover:text-teal-600" />
+                            )}
+                            {paymentMethod === "qris" && (
+                              <Smartphone className="h-5 w-5 text-teal-500 group-hover:text-teal-600" />
+                            )}
+                            {(paymentMethod === "credit_card" ||
+                              paymentMethod === "debit_card") && (
+                              <CreditCard className="h-5 w-5 text-teal-500 group-hover:text-teal-600" />
+                            )}
+                          </div>
+
+                          {/* Dropdown Arrow */}
+                          <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none transition-transform duration-200 group-focus-within:rotate-180">
+                            <ChevronDown className="h-4 w-4 text-gray-500 group-hover:text-gray-600" />
+                          </div>
+                        </div>
                       </div>
 
                       <Button
