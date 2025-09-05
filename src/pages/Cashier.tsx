@@ -8,6 +8,7 @@ import {
   Receipt,
   ShoppingCart,
   Printer,
+  CheckCircle,
 } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
@@ -35,6 +36,7 @@ export const Cashier: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [receiptOpen, setReceiptOpen] = useState(false);
   const [processingCheckout, setProcessingCheckout] = useState(false);
+  const [processingPrint, setProcessingPrint] = useState(false);
   const [lastTransaction, setLastTransaction] = useState<any>(null);
   const [paymentMethod, setPaymentMethod] = useState<
     "cash" | "credit_card" | "debit_card"
@@ -154,6 +156,7 @@ export const Cashier: React.FC = () => {
   };
 
   const handlePrintReceipt = async (transactionData: any) => {
+    setProcessingPrint(true);
     try {
       if (!thermalPrinter.isReady()) {
         const connected = await thermalPrinter.connect();
@@ -181,6 +184,8 @@ export const Cashier: React.FC = () => {
         description: "Gagal mencetak nota. Periksa koneksi printer.",
         variant: "destructive",
       });
+    } finally {
+      setProcessingPrint(false);
     }
   };
 
@@ -459,13 +464,26 @@ export const Cashier: React.FC = () => {
         {/* Receipt Modal */}
         <Modal
           isOpen={receiptOpen}
-          onClose={() => setReceiptOpen(false)}
-          title="Nota Transaksi"
+          onClose={() => !processingPrint && setReceiptOpen(false)}
+          title="Nota Transaksi - Berhasil"
         >
           {lastTransaction && (
             <div className="space-y-4">
+              {/* Success indicator */}
+              <div className="flex items-center justify-center mb-4">
+                <div className="bg-green-100 rounded-full p-3">
+                  <CheckCircle className="h-8 w-8 text-green-600" />
+                </div>
+              </div>
+
               <div className="text-center space-y-1">
-                <h3 className="font-semibold">Pet Shop POS</h3>
+                <h3 className="font-semibold text-lg text-green-600">
+                  Transaksi Berhasil!
+                </h3>
+                <p className="text-sm text-gray-500 mb-3">
+                  Silakan cetak nota atau tutup untuk transaksi baru
+                </p>
+                <h4 className="font-semibold">Pet Shop POS</h4>
                 <p className="text-sm text-gray-600">
                   {lastTransaction.tenant?.name || "Pet Shop"}
                 </p>
@@ -527,19 +545,21 @@ export const Cashier: React.FC = () => {
                 </p>
               </div>
 
-              <div className="flex gap-2 mt-4">
+              <div className="flex gap-2 mt-6">
                 <Button
-                  variant="secondary"
                   onClick={() => handlePrintReceipt(lastTransaction)}
-                  className="flex-1 flex items-center justify-center gap-2"
+                  disabled={processingPrint}
+                  className="flex-2 bg-teal-600 hover:bg-teal-700 text-white font-medium flex items-center justify-center gap-2"
                 >
                   <Printer className="h-4 w-4" />
-                  <span>Print Nota</span>
+                  <span>{processingPrint ? "Mencetak..." : "Print Nota"}</span>
                 </Button>
 
                 <Button
+                  variant="secondary"
                   onClick={() => setReceiptOpen(false)}
-                  className="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-medium"
+                  disabled={processingPrint}
+                  className="flex-1 flex items-center justify-center"
                 >
                   Tutup
                 </Button>

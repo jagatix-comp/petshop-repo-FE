@@ -502,7 +502,7 @@ class ApiService {
         created_at: string;
         updated_at: string;
       };
-    }>("/api/v1/transactions", {
+    }>("/transactions", {
       method: "POST",
       body: JSON.stringify(data),
     });
@@ -543,7 +543,7 @@ class ApiService {
         created_at: string;
         updated_at: string;
       }>;
-    }>(`/api/v1/transactions?page=${page}&limit=${limit}`);
+    }>(`/transactions?page=${page}&limit=${limit}`);
   }
 
   async getTransactionByIdV2(id: string) {
@@ -575,7 +575,7 @@ class ApiService {
         created_at: string;
         updated_at: string;
       };
-    }>(`/api/v1/transactions/${id}`);
+    }>(`/transactions/${id}`);
   }
 
   // Transactions endpoints
