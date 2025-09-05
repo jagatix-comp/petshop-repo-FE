@@ -468,6 +468,116 @@ class ApiService {
     });
   }
 
+  // New Transaction API methods
+  async createTransactionV2(data: {
+    PaymentMethod: string;
+    TotalPrice: number;
+    Products: Array<{ id: string; quantity: number; price: number }>;
+  }) {
+    return this.request<{
+      status: string;
+      message: string;
+      data: {
+        id: string;
+        PaymentMethod: string;
+        TotalPrice: number;
+        user: {
+          id: string;
+          name: string;
+          username: string;
+          phoneNumber: string;
+          role: string;
+        };
+        tenant: {
+          id: string;
+          name: string;
+          location: string;
+        };
+        products: Array<{
+          id: string;
+          name: string;
+          price: number;
+          quantity: number;
+        }>;
+        created_at: string;
+        updated_at: string;
+      };
+    }>("/api/v1/transactions", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getTransactionsV2(page: number = 1, limit: number = 10) {
+    return this.request<{
+      status: string;
+      message: string;
+      metadata: {
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+      };
+      data: Array<{
+        id: string;
+        PaymentMethod: string;
+        TotalPrice: number;
+        user: {
+          id: string;
+          name: string;
+          username: string;
+          phoneNumber: string;
+          role: string;
+        };
+        tenant: {
+          id: string;
+          name: string;
+          location: string;
+        };
+        products: Array<{
+          id: string;
+          name: string;
+          price: number;
+          quantity: number;
+        }>;
+        created_at: string;
+        updated_at: string;
+      }>;
+    }>(`/api/v1/transactions?page=${page}&limit=${limit}`);
+  }
+
+  async getTransactionByIdV2(id: string) {
+    return this.request<{
+      status: string;
+      message: string;
+      data: {
+        id: string;
+        PaymentMethod: string;
+        TotalPrice: number;
+        user: {
+          id: string;
+          name: string;
+          username: string;
+          phoneNumber: string;
+          role: string;
+        };
+        tenant: {
+          id: string;
+          name: string;
+          location: string;
+        };
+        products: Array<{
+          id: string;
+          name: string;
+          price: number;
+          quantity: number;
+        }>;
+        created_at: string;
+        updated_at: string;
+      };
+    }>(`/api/v1/transactions/${id}`);
+  }
+
   // Transactions endpoints
   async createTransaction(data: {
     items: Array<{ product_id: string; quantity: number }>;

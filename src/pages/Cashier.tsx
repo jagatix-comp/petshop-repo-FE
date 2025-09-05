@@ -7,6 +7,7 @@ import {
   Search,
   Receipt,
   ShoppingCart,
+  Printer,
 } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
@@ -17,6 +18,8 @@ import { Separator } from "../components/ui/Separator";
 import { useStore } from "../store/useStore";
 import { useToast } from "../hooks/useToast";
 import { formatCurrency } from "../utils/auth";
+import { transactionApi } from "../services/transactionApi";
+import { thermalPrinter } from "../services/thermalPrinter";
 
 export const Cashier: React.FC = () => {
   const {
@@ -27,13 +30,15 @@ export const Cashier: React.FC = () => {
     updateCartItemQuantity,
     clearCart,
     addTransaction,
-    user,
   } = useStore();
   const [filteredProducts, setFilteredProducts] = useState(products);
   const [searchTerm, setSearchTerm] = useState("");
   const [receiptOpen, setReceiptOpen] = useState(false);
   const [processingCheckout, setProcessingCheckout] = useState(false);
   const [lastTransaction, setLastTransaction] = useState<any>(null);
+  const [paymentMethod, setPaymentMethod] = useState<
+    "cash" | "credit_card" | "debit_card"
+  >("cash");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -107,32 +112,99 @@ export const Cashier: React.FC = () => {
     setProcessingCheckout(true);
     try {
       const total = calculateTotal();
-      const transaction = {
-        id: Date.now().toString(),
-        date: new Date().toISOString(),
-        items: cart,
-        total,
-        cashier: user?.name || "Unknown",
-        branch: user?.tenant?.name || "Unknown Branch",
+
+      // Prepare transaction data for API
+      const transactionData = {
+        PaymentMethod: paymentMethod,
+        TotalPrice: total,
+        Products: cart.map((item) => ({
+          id: item.product.id,
+          quantity: item.quantity,
+          price: item.product.price,
+          name: item.product.name,
+        })),
       };
 
+      // Create transaction via API
+      const createdTransaction = await transactionApi.create(transactionData);
+
+      // Update local store (for compatibility with existing components)
       addTransaction(cart, total);
-      setLastTransaction(transaction);
+
+      setLastTransaction(createdTransaction);
       setReceiptOpen(true);
       clearCart();
 
       toast({
         title: "Transaksi Berhasil",
-        description: `Total: ${formatCurrency(total)}`,
+        description: `Total: ${formatCurrency(
+          total
+        )} | ID: ${createdTransaction.id.substring(0, 8)}`,
       });
     } catch (error) {
+      console.error("Checkout error:", error);
       toast({
         title: "Error",
-        description: "Gagal memproses transaksi",
+        description: "Gagal memproses transaksi. Silakan coba lagi.",
         variant: "destructive",
       });
     } finally {
       setProcessingCheckout(false);
+    }
+  };
+
+  const handlePrintReceipt = async (transactionData: any) => {
+    try {
+      if (!thermalPrinter.isReady()) {
+        const connected = await thermalPrinter.connect();
+        if (!connected) {
+          toast({
+            title: "Printer Error",
+            description:
+              "Gagal terhubung ke printer. Pastikan printer terhubung dan driver sudah terinstall.",
+            variant: "destructive",
+          });
+          return;
+        }
+      }
+
+      await thermalPrinter.printReceipt(transactionData);
+
+      toast({
+        title: "Print Berhasil",
+        description: "Nota berhasil dicetak",
+      });
+    } catch (error) {
+      console.error("Print error:", error);
+      toast({
+        title: "Print Error",
+        description: "Gagal mencetak nota. Periksa koneksi printer.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleTestPrint = async () => {
+    try {
+      const success = await thermalPrinter.printTest();
+      if (success) {
+        toast({
+          title: "Test Print Berhasil",
+          description: "Printer berfungsi dengan baik",
+        });
+      } else {
+        toast({
+          title: "Test Print Gagal",
+          description: "Periksa koneksi printer",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Test Print Error",
+        description: "Gagal melakukan test print",
+        variant: "destructive",
+      });
     }
   };
 
@@ -328,20 +400,54 @@ export const Cashier: React.FC = () => {
                         </span>
                       </div>
 
-                      <Button
-                        className="w-full bg-teal-600 hover:bg-teal-700 text-white font-medium py-3 flex items-center justify-center gap-2"
-                        onClick={handleCheckout}
-                        disabled={processingCheckout}
-                      >
-                        {processingCheckout ? (
-                          <span>Memproses...</span>
-                        ) : (
-                          <>
-                            <Receipt className="h-4 w-4" />
-                            <span>Checkout</span>
-                          </>
-                        )}
-                      </Button>
+                      {/* Payment Method Selector */}
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700">
+                          Metode Pembayaran:
+                        </label>
+                        <select
+                          value={paymentMethod}
+                          onChange={(e) =>
+                            setPaymentMethod(
+                              e.target.value as
+                                | "cash"
+                                | "credit_card"
+                                | "debit_card"
+                            )
+                          }
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-sm"
+                        >
+                          <option value="cash">Cash</option>
+                          <option value="credit_card">Credit Card</option>
+                          <option value="debit_card">Debit Card</option>
+                        </select>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <Button
+                          variant="secondary"
+                          onClick={handleTestPrint}
+                          className="flex-1 flex items-center justify-center gap-2"
+                        >
+                          <Printer className="h-4 w-4" />
+                          <span>Test Print</span>
+                        </Button>
+
+                        <Button
+                          className="flex-2 bg-teal-600 hover:bg-teal-700 text-white font-medium py-3 flex items-center justify-center gap-2"
+                          onClick={handleCheckout}
+                          disabled={processingCheckout}
+                        >
+                          {processingCheckout ? (
+                            <span>Memproses...</span>
+                          ) : (
+                            <>
+                              <Receipt className="h-4 w-4" />
+                              <span>Checkout</span>
+                            </>
+                          )}
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -361,44 +467,83 @@ export const Cashier: React.FC = () => {
               <div className="text-center space-y-1">
                 <h3 className="font-semibold">Pet Shop POS</h3>
                 <p className="text-sm text-gray-600">
-                  {lastTransaction.branch}
+                  {lastTransaction.tenant?.name || "Pet Shop"}
                 </p>
                 <p className="text-sm text-gray-600">
-                  {new Date().toLocaleString("id-ID")}
+                  {new Date(
+                    lastTransaction.created_at || Date.now()
+                  ).toLocaleString("id-ID")}
                 </p>
               </div>
 
               <Separator />
 
               <div className="space-y-2">
-                {lastTransaction.items.map((item: any, index: number) => (
-                  <div key={index} className="flex justify-between text-sm">
-                    <span>{item.product.name}</span>
-                    <span>
-                      {formatCurrency(item.product.price * item.quantity)}
-                    </span>
-                  </div>
-                ))}
+                {(lastTransaction.products || lastTransaction.items || []).map(
+                  (item: any, index: number) => (
+                    <div key={index} className="flex justify-between text-sm">
+                      <div className="flex-1">
+                        <span className="block">
+                          {item.name || item.product?.name}
+                        </span>
+                        <span className="text-gray-500 text-xs">
+                          {item.quantity} ×{" "}
+                          {formatCurrency(item.price || item.product?.price)}
+                        </span>
+                      </div>
+                      <span className="font-medium">
+                        {formatCurrency(
+                          (item.price || item.product?.price) * item.quantity
+                        )}
+                      </span>
+                    </div>
+                  )
+                )}
               </div>
 
               <Separator />
 
-              <div className="flex justify-between font-semibold">
+              <div className="flex justify-between font-semibold text-lg">
                 <span>Total:</span>
-                <span>{formatCurrency(lastTransaction.total)}</span>
+                <span>
+                  {formatCurrency(
+                    lastTransaction.TotalPrice || lastTransaction.total
+                  )}
+                </span>
               </div>
 
               <div className="text-center text-sm text-gray-600">
-                <p>Kasir: {lastTransaction.cashier}</p>
-                <p>ID Transaksi: {lastTransaction.id}</p>
+                <p>
+                  Kasir: {lastTransaction.user?.name || lastTransaction.cashier}
+                </p>
+                <p>
+                  ID Transaksi: {lastTransaction.id?.substring(0, 16) || "N/A"}
+                </p>
+                <p>
+                  Metode Bayar:{" "}
+                  {(lastTransaction.PaymentMethod || "cash")
+                    .replace("_", " ")
+                    .toUpperCase()}
+                </p>
               </div>
 
-              <Button
-                onClick={() => setReceiptOpen(false)}
-                className="w-full mt-4 bg-teal-600 hover:bg-teal-700 text-white font-medium"
-              >
-                Tutup
-              </Button>
+              <div className="flex gap-2 mt-4">
+                <Button
+                  variant="secondary"
+                  onClick={() => handlePrintReceipt(lastTransaction)}
+                  className="flex-1 flex items-center justify-center gap-2"
+                >
+                  <Printer className="h-4 w-4" />
+                  <span>Print Nota</span>
+                </Button>
+
+                <Button
+                  onClick={() => setReceiptOpen(false)}
+                  className="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-medium"
+                >
+                  Tutup
+                </Button>
+              </div>
             </div>
           )}
         </Modal>
