@@ -1,6 +1,10 @@
-import { useEffect } from 'react';
-import { useStore } from '../store/useStore';
-import { getStoredToken, shouldRefreshToken, isTokenExpired } from '../utils/auth';
+import { useEffect } from "react";
+import { useStore } from "../store/useStore";
+import {
+  getStoredToken,
+  shouldRefreshToken,
+  isTokenExpired,
+} from "../utils/auth";
 
 export const useAuth = () => {
   const { refreshToken, logout, isAuthenticated, initializeAuth } = useStore();
@@ -20,7 +24,7 @@ export const useAuth = () => {
     // Set up automatic token refresh - but don't be too aggressive
     const checkAndRefreshToken = async () => {
       const currentToken = getStoredToken();
-      
+
       if (!currentToken) {
         console.log("🚪 No token found, user needs to login");
         return;
@@ -47,10 +51,10 @@ export const useAuth = () => {
     // Only start checking after a delay to avoid interfering with login process
     const initialDelay = setTimeout(() => {
       checkAndRefreshToken();
-      
+
       // Set up interval to check every 5 minutes (less aggressive)
       const interval = setInterval(checkAndRefreshToken, 5 * 60 * 1000);
-      
+
       // Cleanup function
       return () => clearInterval(interval);
     }, 2000); // 2 second delay
@@ -63,6 +67,6 @@ export const useAuth = () => {
   return {
     refreshToken,
     logout,
-    isAuthenticated
+    isAuthenticated,
   };
 };
