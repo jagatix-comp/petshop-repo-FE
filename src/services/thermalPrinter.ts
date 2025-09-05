@@ -131,10 +131,12 @@ export class ThermalPrinter {
   }
 
   private formatCurrency(amount: number): string {
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
+    // Format dengan Rp tanpa karakter khusus untuk thermal printer
+    const formatted = new Intl.NumberFormat("id-ID", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     }).format(amount);
+    return `Rp ${formatted}`;
   }
 
   private padLine(left: string, right: string, width: number = 32): string {
@@ -168,8 +170,10 @@ export class ThermalPrinter {
 
       await this.sendCommand(this.COMMANDS.NORMAL_SIZE);
       await this.sendCommand(this.COMMANDS.BOLD_OFF);
+      await this.sendText("Jalan Imogiri Barat - Sewon\n");
+      await this.sendText("09239829203923\n");
       await this.sendText(`${receiptData.tenant.name}\n`);
-      await this.sendText(`${receiptData.tenant.location}\n`);
+      //   await this.sendText(`${receiptData.tenant.location}\n`);
 
       // Separator line
       await this.sendCommand(this.COMMANDS.ALIGN_LEFT);
