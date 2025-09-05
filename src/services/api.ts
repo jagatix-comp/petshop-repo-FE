@@ -140,13 +140,6 @@ class ApiService {
   private async performTokenRefresh(): Promise<string> {
     console.log("🔄 Attempting to refresh token...");
     try {
-      const refreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
-
-      if (!refreshToken) {
-        console.log("❌ No refresh token found");
-        throw new Error("No refresh token available");
-      }
-
       const response = await fetch(
         `${API_BASE_URL}${API_ENDPOINTS.AUTH.REFRESH}`,
         {
@@ -155,8 +148,8 @@ class ApiService {
             "Content-Type": "application/json",
             "x-tenant-name": TENANT_NAME,
           },
-          credentials: "include",
-          body: JSON.stringify({ refreshToken }), // Send refreshToken in body
+          credentials: "include", // This sends the HTTP-only cookie
+          body: JSON.stringify({}), // Empty body since refresh token is in HTTP-only cookie
         }
       );
 
@@ -185,16 +178,10 @@ class ApiService {
       }
     } catch (error) {
       console.error("❌ Refresh token failed:", error);
-      // Clear all tokens and force logout
+      // Just clear tokens but don't force redirect - let the store handle logout
       localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
       localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
       localStorage.removeItem(STORAGE_KEYS.USER);
-
-      setTimeout(() => {
-        if (window.location.pathname !== "/login") {
-          window.location.href = "/login";
-        }
-      }, 100);
 
       throw error;
     }

@@ -175,10 +175,8 @@ export const useStore = create<StoreState>((set, get) => ({
       }
     } catch (error) {
       console.error("❌ Store: Refresh token error:", error);
-      // If refresh fails, logout user
-      localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-      localStorage.removeItem(STORAGE_KEYS.USER);
-      set({ user: null, isAuthenticated: false });
+      // Don't immediately clear user state - just return false
+      // Let the calling code decide whether to logout
       return false;
     }
   },
