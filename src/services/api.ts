@@ -1,6 +1,6 @@
 import { API_BASE_URL, TENANT_NAME } from "../config/app";
 import { API_ENDPOINTS, STORAGE_KEYS } from "../constants";
-import { getRefreshTokenFromCookie, debugCookies } from "../utils/auth";
+import { getRefreshTokenFromCookie } from "../utils/auth";
 import type {
   BrandsResponse,
   BrandResponse,
@@ -143,7 +143,7 @@ class ApiService {
     console.log("🔄 Attempting to refresh token...");
 
     // Debug cookies
-    debugCookies();
+    // debugCookies();
 
     // Get refresh token from cookie
     const refreshToken = getRefreshTokenFromCookie();
@@ -265,7 +265,7 @@ class ApiService {
         console.log(
           "🔑 401 Unauthorized detected, checking refresh token availability..."
         );
-        debugCookies(); // Debug cookies before attempting refresh
+        // debugCookies(); // Debug cookies before attempting refresh
 
         // Try to refresh token
         try {
@@ -353,8 +353,8 @@ class ApiService {
       console.log("✅ Login response:", result);
 
       // Debug cookies after login
-      console.log("🍪 Debug cookies after login");
-      debugCookies();
+      // console.log("🍪 Debug cookies after login");
+      // debugCookies();
 
       // Note: Based on your API docs, login only returns accessToken
       // The refreshToken is sent as HTTP-only cookie, not in response
