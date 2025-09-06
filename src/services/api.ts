@@ -1,6 +1,6 @@
 import { API_BASE_URL, TENANT_NAME } from "../config/app";
 import { API_ENDPOINTS, STORAGE_KEYS } from "../constants";
-import { getRefreshTokenFromCookie, debugCookies } from "../utils/auth";
+import { getRefreshTokenFromCookie } from "../utils/auth";
 import type {
   BrandsResponse,
   BrandResponse,
@@ -314,9 +314,9 @@ class ApiService {
       const result = await response.json();
       console.log("✅ Login response:", result);
 
-      // Debug cookies after login
-      console.log("🍪 Debug cookies after login");
-      debugCookies();
+      // // Debug cookies after login
+      // console.log("🍪 Debug cookies after login");
+      // debugCookies();
 
       // Note: Based on your API docs, login only returns accessToken
       // The refreshToken is sent as HTTP-only cookie, not in response
@@ -811,7 +811,7 @@ class ApiService {
         "...",
     });
     // Also log cookie details
-    debugCookies();
+    // debugCookies();
   }
 }
 
