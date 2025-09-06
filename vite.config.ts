@@ -30,11 +30,15 @@ export default defineConfig(({ command, mode }) => {
                 secure: false,
                 // Ensure cookies are properly forwarded
                 configure: (proxy, _options) => {
-                  proxy.on('proxyReq', (proxyReq, req, _res) => {
+                  proxy.on("proxyReq", (proxyReq, req, _res) => {
                     // Log the proxied request
-                    console.log(`🔄 Proxying ${req.method} ${req.url} to ${proxyReq.getHeader('host')}`);
+                    console.log(
+                      `🔄 Proxying ${req.method} ${
+                        req.url
+                      } to ${proxyReq.getHeader("host")}`
+                    );
                   });
-                }
+                },
               },
             }
           : undefined,

@@ -141,15 +141,15 @@ class ApiService {
 
   private async performTokenRefresh(): Promise<string> {
     console.log("🔄 Attempting to refresh token...");
-    
+
     // Get refresh token from cookie
     const refreshToken = getRefreshTokenFromCookie();
-    
+
     if (!refreshToken) {
       console.error("❌ No refresh token found in cookie");
       throw new Error("No refresh token found");
     }
-    
+
     try {
       const response = await fetch(
         `${API_BASE_URL}${API_ENDPOINTS.AUTH.REFRESH}`,
@@ -193,10 +193,11 @@ class ApiService {
       localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
       localStorage.removeItem(STORAGE_KEYS.USER);
       // Clear refresh token cookie
-      document.cookie = "refresh_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
-      
+      document.cookie =
+        "refresh_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+
       // Only redirect if not already on login page and not logging out
-      if (!this.isLoggingOut && !window.location.pathname.includes('/login')) {
+      if (!this.isLoggingOut && !window.location.pathname.includes("/login")) {
         window.location.href = "/login";
       }
       throw error;
@@ -353,10 +354,10 @@ class ApiService {
 
   async logout() {
     console.log("🚪 Starting logout process...");
-    
+
     // Set logout flag to prevent refresh attempts
     this.isLoggingOut = true;
-    
+
     try {
       // Use direct fetch to avoid token refresh interceptor
       const response = await fetch(
@@ -384,7 +385,7 @@ class ApiService {
       this.isRefreshing = false;
       this.refreshPromise = null;
       this.isLoggingOut = false;
-      
+
       console.log("🚪 Logout cleanup completed");
     }
   }
