@@ -5,12 +5,11 @@ import { useStore } from "../store/useStore";
 import { formatCurrency } from "../utils/auth";
 
 export const Dashboard: React.FC = () => {
-  const { products, transactions, user } = useStore();
+  const { products, totalProducts, transactions, user } = useStore();
 
   const today = new Date().toISOString().split("T")[0];
   const todayTransactions = transactions.filter((t) => t.date === today);
   const todayRevenue = todayTransactions.reduce((sum, t) => sum + t.total, 0);
-  const totalProducts = products.length;
   const lowStockProducts = products.filter((p) => p.stock < 10).length;
 
   const stats = [

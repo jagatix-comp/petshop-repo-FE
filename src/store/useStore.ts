@@ -64,6 +64,7 @@ interface StoreState {
 
   // Products
   products: Product[];
+  totalProducts: number;
   isLoadingProducts: boolean;
   loadProducts: (params?: {
     search?: string;
@@ -123,11 +124,23 @@ export const useStore = create<StoreState>((set, get) => ({
       const response = await apiService.login(username, password);
 
       if (response.status === "success") {
-        // Save access token
+        // Save access token first
         localStorage.setItem(
           STORAGE_KEYS.ACCESS_TOKEN,
           response.data.accessToken
         );
+
+        // Now that token is saved, fetch products count
+        try {
+          console.log("📦 Getting products count after login...");
+          const productsResponse = await apiService.getProducts({ limit: 1 }); // Only get 1 item to minimize data transfer
+          const totalProducts = productsResponse.metadata?.total || 0;
+          console.log(`📊 Total products: ${totalProducts}`);
+          set({ totalProducts });
+        } catch (error) {
+          console.warn("⚠️ Failed to get products count:", error);
+          // Don't fail login if products count fails
+        }
 
         // Don't try to load profile immediately - let the auth initialization handle it
         console.log("✅ Store: Login successful, loading profile...");
@@ -235,6 +248,7 @@ export const useStore = create<StoreState>((set, get) => ({
 
   // Products
   products: [],
+  totalProducts: 0,
   isLoadingProducts: false,
   loadProducts: async (params) => {
     try {
@@ -248,17 +262,23 @@ export const useStore = create<StoreState>((set, get) => ({
           "✅ Store: Products loaded successfully, count:",
           response.data?.length || 0
         );
-        set({ products: response.data || [], isLoadingProducts: false });
+        const totalProducts = response.metadata?.total || 0;
+        set({ 
+          products: response.data || [], 
+          totalProducts,
+          isLoadingProducts: false 
+        });
+        console.log(`📊 Store: Total products updated to: ${totalProducts}`);
       } else {
         console.log(
           "❌ Store: Failed to load products, response status:",
           response.status
         );
-        set({ products: [], isLoadingProducts: false });
+        set({ products: [], totalProducts: 0, isLoadingProducts: false });
       }
     } catch (error) {
       console.error("❌ Store: Failed to load products:", error);
-      set({ products: [], isLoadingProducts: false });
+      set({ products: [], totalProducts: 0, isLoadingProducts: false });
     }
   },
   addProduct: async (productData) => {
