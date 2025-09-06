@@ -19,7 +19,7 @@ export default defineConfig(({ command, mode }) => {
     server: {
       port: 5173,
       host: "localhost",
-      // Proxy for development to avoid CORS issues
+      // Proxy for development to avoid CORS issues and handle cookies properly
       proxy:
         mode === "development"
           ? {
@@ -28,6 +28,13 @@ export default defineConfig(({ command, mode }) => {
                 changeOrigin: true,
                 rewrite: (path) => path.replace(/^\/api/, ""),
                 secure: false,
+                // Ensure cookies are properly forwarded
+                configure: (proxy, _options) => {
+                  proxy.on('proxyReq', (proxyReq, req, _res) => {
+                    // Log the proxied request
+                    console.log(`🔄 Proxying ${req.method} ${req.url} to ${proxyReq.getHeader('host')}`);
+                  });
+                }
               },
             }
           : undefined,

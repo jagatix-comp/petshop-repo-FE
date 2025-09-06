@@ -41,6 +41,27 @@ export const shouldRefreshToken = (token: string): boolean => {
   }
 };
 
+// Function to get refresh token from cookie
+export const getRefreshTokenFromCookie = (): string | null => {
+  const cookieValue = document.cookie
+    .split("; ")
+    .find((row) => row.startsWith("refresh_token="))
+    ?.split("=")[1];
+  
+  return cookieValue || null;
+};
+
+// Function to check if refresh token exists in cookie
+export const hasRefreshToken = (): boolean => {
+  return getRefreshTokenFromCookie() !== null;
+};
+
+// Function to debug cookies
+export const debugCookies = () => {
+  console.log("🍪 All cookies:", document.cookie);
+  console.log("🔑 Refresh token:", getRefreshTokenFromCookie());
+};
+
 export const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat("id-ID", {
     style: "currency",

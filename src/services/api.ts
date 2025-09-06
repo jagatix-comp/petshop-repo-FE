@@ -1,5 +1,6 @@
 import { API_BASE_URL, TENANT_NAME } from "../config/app";
 import { API_ENDPOINTS, STORAGE_KEYS } from "../constants";
+import { getRefreshTokenFromCookie, debugCookies } from "../utils/auth";
 import type {
   BrandsResponse,
   BrandResponse,
@@ -101,6 +102,7 @@ interface UpdateUserRequest {
 class ApiService {
   private isRefreshing = false;
   private refreshPromise: Promise<string> | null = null;
+  private isLoggingOut = false;
 
   private getAuthHeaders() {
     const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
@@ -139,6 +141,15 @@ class ApiService {
 
   private async performTokenRefresh(): Promise<string> {
     console.log("🔄 Attempting to refresh token...");
+    
+    // Get refresh token from cookie
+    const refreshToken = getRefreshTokenFromCookie();
+    
+    if (!refreshToken) {
+      console.error("❌ No refresh token found in cookie");
+      throw new Error("No refresh token found");
+    }
+    
     try {
       const response = await fetch(
         `${API_BASE_URL}${API_ENDPOINTS.AUTH.REFRESH}`,
@@ -148,8 +159,8 @@ class ApiService {
             "Content-Type": "application/json",
             "x-tenant-name": TENANT_NAME,
           },
-          credentials: "include", // This sends the HTTP-only cookie
-          body: JSON.stringify({}), // Empty body since refresh token is in HTTP-only cookie
+          credentials: "include", // Include cookies to receive new refresh token
+          body: JSON.stringify({ refreshToken }), // Send refresh token in body
         }
       );
 
@@ -178,11 +189,16 @@ class ApiService {
       }
     } catch (error) {
       console.error("❌ Refresh token failed:", error);
-      // Just clear tokens but don't force redirect - let the store handle logout
+      // Clear tokens dan redirect ke login
       localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-      localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
       localStorage.removeItem(STORAGE_KEYS.USER);
-
+      // Clear refresh token cookie
+      document.cookie = "refresh_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+      
+      // Only redirect if not already on login page and not logging out
+      if (!this.isLoggingOut && !window.location.pathname.includes('/login')) {
+        window.location.href = "/login";
+      }
       throw error;
     }
   }
@@ -219,7 +235,8 @@ class ApiService {
       if (
         response.status === 401 &&
         endpoint !== API_ENDPOINTS.AUTH.REFRESH &&
-        endpoint !== API_ENDPOINTS.AUTH.LOGIN
+        endpoint !== API_ENDPOINTS.AUTH.LOGIN &&
+        !this.isLoggingOut // Don't try to refresh during logout
       ) {
         // Try to refresh token
         try {
@@ -296,6 +313,10 @@ class ApiService {
       const result = await response.json();
       console.log("✅ Login response:", result);
 
+      // Debug cookies after login
+      console.log("🍪 Debug cookies after login");
+      debugCookies();
+
       // Note: Based on your API docs, login only returns accessToken
       // The refreshToken is sent as HTTP-only cookie, not in response
       return {
@@ -331,7 +352,13 @@ class ApiService {
   }
 
   async logout() {
+    console.log("🚪 Starting logout process...");
+    
+    // Set logout flag to prevent refresh attempts
+    this.isLoggingOut = true;
+    
     try {
+      // Use direct fetch to avoid token refresh interceptor
       const response = await fetch(
         `${API_BASE_URL}${API_ENDPOINTS.AUTH.LOGOUT}`,
         {
@@ -340,23 +367,26 @@ class ApiService {
             "Content-Type": "application/json",
             "x-tenant-name": TENANT_NAME,
           },
-          credentials: "include",
+          credentials: "include", // Important for refresh token cookie
         }
       );
 
       console.log("🚪 Logout API response:", response.status);
     } catch (error) {
       console.error("❌ Logout API call failed:", error);
+    } finally {
+      // Clear local storage regardless of API success
+      localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+      localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN); // Remove old localStorage refresh token
+      localStorage.removeItem(STORAGE_KEYS.USER);
+
+      // Reset refresh state
+      this.isRefreshing = false;
+      this.refreshPromise = null;
+      this.isLoggingOut = false;
+      
+      console.log("🚪 Logout cleanup completed");
     }
-
-    // Clear local storage
-    localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-    localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
-    localStorage.removeItem(STORAGE_KEYS.USER);
-
-    // Reset refresh state
-    this.isRefreshing = false;
-    this.refreshPromise = null;
   }
 
   async getCurrentUser() {
@@ -771,12 +801,16 @@ class ApiService {
   debugRefreshToken() {
     console.log("🔍 Refresh Token Debug Info:", {
       isRefreshing: this.isRefreshing,
+      isLoggingOut: this.isLoggingOut,
       hasRefreshPromise: !!this.refreshPromise,
       hasAccessToken: !!localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN),
+      hasRefreshTokenCookie: !!getRefreshTokenFromCookie(),
       accessToken:
         localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN)?.substring(0, 20) +
         "...",
     });
+    // Also log cookie details
+    debugCookies();
   }
 }
 

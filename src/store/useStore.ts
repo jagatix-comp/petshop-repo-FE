@@ -11,6 +11,7 @@ import {
 } from "../types";
 import { apiService } from "../services/api";
 import { STORAGE_KEYS } from "../constants";
+import { hasRefreshToken } from "../utils/auth";
 
 interface StoreState {
   // Auth
@@ -208,14 +209,20 @@ export const useStore = create<StoreState>((set, get) => ({
       const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
       const userData = localStorage.getItem(STORAGE_KEYS.USER);
 
-      if (token && userData) {
+      // Check if we have both access token and refresh token (cookie)
+      if (token && userData && hasRefreshToken()) {
         const user = JSON.parse(userData);
         set({ user, isAuthenticated: true });
 
         // Don't load fresh profile data immediately to avoid race conditions
         // Let the components that need fresh data load it explicitly
       } else {
-        // If no valid auth data, ensure we're logged out
+        // If no valid auth data or missing refresh token, ensure we're logged out
+        console.log("🚪 Missing auth tokens, logging out:", {
+          hasAccessToken: !!token,
+          hasUserData: !!userData,
+          hasRefreshToken: hasRefreshToken(),
+        });
         set({ user: null, isAuthenticated: false });
       }
     } catch (error) {
