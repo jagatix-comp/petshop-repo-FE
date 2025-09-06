@@ -35,8 +35,9 @@ A modern, responsive Point of Sale (POS) and inventory management system built w
 ## � Documentation
 
 📋 **For detailed documentation, see [`docs/`](./docs/) folder:**
+
 - [Environment Setup](./docs/ENVIRONMENT-SETUP.md) - Configuration guide
-- [Project Structure](./docs/STRUCTURE.md) - Architecture overview  
+- [Project Structure](./docs/STRUCTURE.md) - Architecture overview
 - [Backend Requirements](./docs/backend-requirements.md) - API specifications
 
 ## �🚀 Tech Stack
@@ -94,16 +95,6 @@ npm run dev
 ```
 
 ### Environment Variables
-
-```env
-# API Configuration
-VITE_API_BASE_URL=http://103.54.170.35:8001/api/v1
-VITE_TENANT_NAME=petshop
-
-# App Configuration
-VITE_APP_NAME=PetShop POS
-VITE_APP_VERSION=1.0.0
-```
 
 ## 🚀 Deployment
 
