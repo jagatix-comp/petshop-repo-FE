@@ -1,6 +1,6 @@
 import { API_BASE_URL, TENANT_NAME } from "../config/app";
 import { API_ENDPOINTS, STORAGE_KEYS } from "../constants";
-import { getRefreshTokenFromCookie } from "../utils/auth";
+import { getRefreshTokenFromCookie, debugCookies } from "../utils/auth";
 import type {
   BrandsResponse,
   BrandResponse,
@@ -142,13 +142,19 @@ class ApiService {
   private async performTokenRefresh(): Promise<string> {
     console.log("🔄 Attempting to refresh token...");
 
+    // Debug cookies
+    debugCookies();
+
     // Get refresh token from cookie
     const refreshToken = getRefreshTokenFromCookie();
 
     if (!refreshToken) {
       console.error("❌ No refresh token found in cookie");
+      console.log("🍪 Available cookies:", document.cookie);
       throw new Error("No refresh token found");
     }
+
+    console.log("🔑 Found refresh token, length:", refreshToken.length);
 
     try {
       const response = await fetch(
@@ -171,7 +177,11 @@ class ApiService {
       });
 
       if (!response.ok) {
-        throw new Error(`Refresh failed: ${response.statusText}`);
+        const errorText = await response.text();
+        console.error("❌ Refresh token API error:", errorText);
+        throw new Error(
+          `Refresh failed: ${response.statusText} - ${errorText}`
+        );
       }
 
       const result = await response.json();
@@ -185,20 +195,33 @@ class ApiService {
         console.log("✅ Token refresh successful, new token saved");
         return result.data.accessToken;
       } else {
+        console.error("❌ Invalid refresh response format:", result);
         throw new Error("Invalid refresh response format");
       }
     } catch (error) {
       console.error("❌ Refresh token failed:", error);
-      // Clear tokens dan redirect ke login
-      localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-      localStorage.removeItem(STORAGE_KEYS.USER);
-      // Clear refresh token cookie
-      document.cookie =
-        "refresh_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
 
-      // Only redirect if not already on login page and not logging out
-      if (!this.isLoggingOut && !window.location.pathname.includes("/login")) {
-        window.location.href = "/login";
+      // Hanya clear tokens dan redirect jika benar-benar gagal
+      // Dan beri waktu untuk retry
+      if (
+        error instanceof Error &&
+        error.message.includes("Invalid refresh response format")
+      ) {
+        // Clear tokens dan redirect ke login hanya jika response format tidak valid
+        localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+        localStorage.removeItem(STORAGE_KEYS.USER);
+
+        // Clear refresh token cookie
+        document.cookie =
+          "refresh_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+
+        // Only redirect if not already on login page and not logging out
+        if (
+          !this.isLoggingOut &&
+          !window.location.pathname.includes("/login")
+        ) {
+          window.location.href = "/login";
+        }
       }
       throw error;
     }
@@ -239,6 +262,11 @@ class ApiService {
         endpoint !== API_ENDPOINTS.AUTH.LOGIN &&
         !this.isLoggingOut // Don't try to refresh during logout
       ) {
+        console.log(
+          "🔑 401 Unauthorized detected, checking refresh token availability..."
+        );
+        debugCookies(); // Debug cookies before attempting refresh
+
         // Try to refresh token
         try {
           console.log("🔄 Access token expired, attempting refresh...");
@@ -260,13 +288,23 @@ class ApiService {
               return retryResponse.json();
             } else {
               console.error("❌ Retry request failed:", retryResponse.status);
+              // Jangan langsung logout, lempar error untuk dicoba lagi
               throw new Error(`Retry failed: ${retryResponse.statusText}`);
             }
+          } else {
+            console.error("❌ No new token received from refresh");
+            throw new Error("Token refresh returned null");
           }
         } catch (refreshError) {
           console.error("❌ Token refresh failed with error:", refreshError);
-          // Error handling sudah dilakukan di performTokenRefresh()
-          return Promise.reject(new Error("Authentication failed"));
+          // Jangan langsung logout, biarkan aplikasi menangani error ini
+          throw new Error(
+            `Authentication failed: ${
+              refreshError instanceof Error
+                ? refreshError.message
+                : "Unknown error"
+            }`
+          );
         }
       }
 
@@ -314,9 +352,9 @@ class ApiService {
       const result = await response.json();
       console.log("✅ Login response:", result);
 
-      // // Debug cookies after login
-      // console.log("🍪 Debug cookies after login");
-      // debugCookies();
+      // Debug cookies after login
+      console.log("🍪 Debug cookies after login");
+      debugCookies();
 
       // Note: Based on your API docs, login only returns accessToken
       // The refreshToken is sent as HTTP-only cookie, not in response

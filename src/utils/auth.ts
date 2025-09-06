@@ -57,10 +57,10 @@ export const hasRefreshToken = (): boolean => {
 };
 
 // Function to debug cookies
-// export const debugCookies = () => {
-//   console.log("🍪 All cookies:", document.cookie);
-//   console.log("🔑 Refresh token:", getRefreshTokenFromCookie());
-// };
+export const debugCookies = () => {
+  console.log("🍪 All cookies:", document.cookie);
+  console.log("🔑 Refresh token:", getRefreshTokenFromCookie());
+};
 
 export const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat("id-ID", {

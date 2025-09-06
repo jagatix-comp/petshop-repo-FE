@@ -263,10 +263,10 @@ export const useStore = create<StoreState>((set, get) => ({
           response.data?.length || 0
         );
         const totalProducts = response.metadata?.total || 0;
-        set({ 
-          products: response.data || [], 
+        set({
+          products: response.data || [],
           totalProducts,
-          isLoadingProducts: false 
+          isLoadingProducts: false,
         });
         console.log(`📊 Store: Total products updated to: ${totalProducts}`);
       } else {
