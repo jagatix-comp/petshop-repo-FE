@@ -48,6 +48,11 @@ export const Cashier: React.FC = () => {
   >("cash");
   const { toast } = useToast();
 
+  // Load products when component mounts
+  useEffect(() => {
+    loadProducts();
+  }, [loadProducts]);
+
   useEffect(() => {
     const filtered = products.filter(
       (product) =>
